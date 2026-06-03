@@ -174,19 +174,27 @@ form.addEventListener('submit', async (e) => {
                     </div>
                 `;
 
-                await fetch('https://api.web3forms.com/submit', {
+                const response = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({
                         access_key: accessKey,
                         subject: faultData.machine || "Yeni Arıza", // Konu başlığı Makine Adı
                         from_name: faultTypeStr, // Gönderen kişi MEKANİK ARIZA vs.
-                        email: "noreply@arizabildirim.com",
+                        email: "test@sistem.com",
                         message: emailHtml
                     })
                 });
+                
+                const result = await response.json();
+                if(!result.success) {
+                    alert("⚠️ API Hatası (Mail Gitmedi): " + result.message);
+                }
+            } else {
+                console.log("Mail gönderimi kapalı veya Access Key yok.");
             }
         } catch(e) {
+            alert("⚠️ Mail gönderim aşamasında kritik hata: " + e.message);
             console.log("Arıza maili gönderilemedi: ", e);
         }
 
