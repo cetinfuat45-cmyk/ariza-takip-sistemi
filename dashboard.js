@@ -121,7 +121,7 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
         const currentColSpan = isAdmin ? baseColSpan + 1 : baseColSpan;
         
         Object.keys(grouped).forEach(groupName => {
-            if (grouped[groupName].length === 0) return; // Boş grubu atla
+            if (grouped[groupName].length === 0) return; 
             
             let groupBg = groupName.includes('BUGÜN') ? '#3b82f6' : '#475569';
             
@@ -137,15 +137,25 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                 const dateStr = fault.createdAt ? new Date(fault.createdAt.toDate()).toLocaleString('tr-TR') : 'Şimdi';
                 let photoLink = fault.photoUrl ? `<a href="${fault.photoUrl}" target="_blank" style="color:var(--accent)">Foto Gör</a>` : '-';
                 
-                // İş türüne göre satır rengi
-                let rowColorBase = '#94a3b8'; // default
+                // Tam İstenilen HEX Kodları
+                let rowBg = '#e2e8f0'; // Default açık gri
+                let textColor = '#000000'; // Arka planlar çok parlak olacağı için yazılar siyah olmalı
+                
                 const jType = fault.jobType ? fault.jobType.toUpperCase() : '';
-                if (jType.includes('İSG') || jType.includes('GÜVENLİK')) { rowColorBase = '#ea580c'; } 
-                else if (jType.includes('MEKANİK')) { rowColorBase = '#06b6d4'; } 
-                else if (jType.includes('ELEKTRİK')) { rowColorBase = '#eab308'; } 
-                else if (jType.includes('PLANLI')) { rowColorBase = '#f59e0b'; }
+                if (jType.includes('İSG') || jType.includes('GÜVENLİ')) { 
+                    rowBg = '#FF0000'; // İş Güvenliği - Kırmızı
+                    textColor = '#FFFFFF'; // Kırmızı üzerinde beyaz daha net okunur
+                } 
+                else if (jType.includes('MEKANİK')) { 
+                    rowBg = '#00FFFF'; // Mekanik - Turkuaz
+                } 
+                else if (jType.includes('ELEKTRİK')) { 
+                    rowBg = '#FFFF00'; // Elektrik - Sarı
+                } 
+                else if (jType.includes('PLANLI')) { 
+                    rowBg = '#FFA500'; // Planlı - Turuncu
+                }
 
-                const rowBg = `${rowColorBase}33`; 
                 const id = fault.id;
 
                 let assigneeHtml = fault.assignedTo || '-';
@@ -166,7 +176,7 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
 
                 if (!isResolved) {
                     html += `
-                        <tr style="background: ${rowBg}; color: white;">
+                        <tr style="background: ${rowBg}; color: ${textColor}; border: 1px solid rgba(0,0,0,0.1) !important;">
                             <td data-label="Tarih">${dateStr}</td>
                             <td data-label="Bildiren">${fault.userName || '-'}</td>
                             <td data-label="Bölüm">${fault.costCenter || '-'}</td>
@@ -183,7 +193,7 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                 } else {
                     const resolvedDateStr = fault.resolvedAt ? new Date(fault.resolvedAt.toDate()).toLocaleString('tr-TR') : 'Şimdi';
                     html += `
-                        <tr style="background: ${rowBg}; color: white;">
+                        <tr style="background: ${rowBg}; color: ${textColor}; border: 1px solid rgba(0,0,0,0.1) !important;">
                             <td data-label="Bildirim">${dateStr}</td>
                             <td data-label="Çözülme">${resolvedDateStr}</td>
                             <td data-label="Bildiren">${fault.userName || '-'}</td>

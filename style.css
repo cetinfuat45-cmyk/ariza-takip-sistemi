@@ -84,7 +84,7 @@ button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
 .table-container { overflow-x: auto; white-space: nowrap; }
 table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--panel-border); }
+th, td { padding: 0.4rem 0.5rem; text-align: left; border-bottom: 1px solid var(--panel-border); }
 th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(0,0,0,0.2); }
 .status-badge { padding: 0.25rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
 .status-acik { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
@@ -121,9 +121,9 @@ th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; 
     table, thead, tbody, th, td, tr { display: block; }
     thead tr { position: absolute; top: -9999px; left: -9999px; } /* Başlıkları Gizle */
     
-    tr { margin-bottom: 1rem; border-radius: 12px; padding: 0.5rem 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08) !important; position: relative; }
+    tr { margin-bottom: 0.8rem; border-radius: 8px; padding: 0.4rem 0.8rem; box-shadow: 0 2px 6px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05) !important; position: relative; }
     
-    td { border: none; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; padding: 0.75rem 0 !important; padding-left: 35% !important; text-align: right !important; display: flex; justify-content: flex-end; align-items: center; min-height: 44px; }
+    td { border: none; border-bottom: 1px solid rgba(255,255,255,0.03); position: relative; padding: 0.4rem 0 !important; padding-left: 35% !important; text-align: right !important; display: flex; justify-content: flex-end; align-items: center; }
     td:last-child { border-bottom: 0; }
     
     td::before {
