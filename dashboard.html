@@ -42,55 +42,26 @@
                 </div>
             </div>
 
-            <!-- Bekleyen Arızalar -->
-            <h2 style="color:white; margin-bottom: 1rem;">🔴 Bekleyen Arızalar</h2>
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Tarih</th>
-                            <th>Bildiren</th>
-                            <th>Bölüm</th>
-                            <th>Makine</th>
-                            <th>Vardiya</th>
-                            <th>İş Türü</th>
-                            <th>Açıklama</th>
-                            <th>Foto</th>
-                            <th>Görevli</th>
-                            <th>Durum</th>
-                            <th class="admin-col" style="display:none;">Admin İşlem</th>
-                        </tr>
-                    </thead>
-                    <tbody id="faultTableBody">
-                        <tr><td colspan="11" style="text-align:center;">Yükleniyor...</td></tr>
-                    </tbody>
-                </table>
+            <!-- Bekleyen Arızalar Terminali -->
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <span class="pulse-icon">📈</span> Arıza Console Terminal
+                    <span style="float: right; font-size: 0.8rem; color: #888;" id="totalOpenCount">0 kayıt</span>
+                </div>
+                <div class="terminal-body" id="faultTerminal">
+                    <!-- Terminal Logları Buraya Gelecek -->
+                </div>
             </div>
 
-            <!-- Çözülmüş Arızalar -->
-            <h2 style="color:white; margin: 2rem 0 1rem;">🟢 Çözülen Arızalar</h2>
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Bildirim Tarihi</th>
-                            <th>Çözüm Tarihi</th>
-                            <th>Bildiren</th>
-                            <th>Bölüm</th>
-                            <th>Makine</th>
-                            <th>Vardiya</th>
-                            <th>İş Türü</th>
-                            <th>Açıklama</th>
-                            <th>Foto</th>
-                            <th>Görevli</th>
-                            <th>Durum</th>
-                            <th class="admin-col" style="display:none;">Admin İşlem</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resolvedTableBody">
-                        <tr><td colspan="12" style="text-align:center;">Yükleniyor...</td></tr>
-                    </tbody>
-                </table>
+            <!-- Çözülen Arızalar Terminali -->
+            <div class="terminal-container mt-4">
+                <div class="terminal-header">
+                    <span class="pulse-icon" style="color: #4ade80;">✓</span> Çözülenler Log
+                    <span style="float: right; font-size: 0.8rem; color: #888;" id="totalResolvedCount">0 kayıt</span>
+                </div>
+                <div class="terminal-body" id="resolvedTerminal">
+                    <!-- Terminal Logları Buraya Gelecek -->
+                </div>
             </div>
         </div>
     </div>
