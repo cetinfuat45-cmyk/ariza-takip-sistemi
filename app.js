@@ -1,3 +1,10 @@
+// Service Worker Registration for PWA (Android Install)
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(console.error);
+    });
+}
+
 // Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAEqLYUevIJCcLrJa-05MXx5ik-QFouq9o",
