@@ -143,3 +143,43 @@ th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; 
     tr td[colspan] { padding-left: 0 !important; text-align: center !important; justify-content: center; border: none !important; font-size: 1.1rem !important; }
     tr td[colspan]::before { content: none !important; }
 }
+
+/* --- AÇILIŞ EKRANI (SPLASH SCREEN) --- */
+.splash-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #0f172a; /* Temanın arka plan rengi */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    animation: fadeOut 0.5s ease 2.5s forwards; /* 2.5 sn ekranda kalıp yok olur */
+    pointer-events: none; /* Animasyon bitince tıklamaları engellemesin */
+}
+.splash-logo {
+    max-width: 150px;
+    margin-bottom: 2rem;
+    animation: pulseLogo 1.5s ease-in-out infinite alternate;
+}
+.splash-text {
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 1px;
+    line-height: 1.4;
+    animation: slideUp 1s ease;
+}
+@keyframes fadeOut {
+    from { opacity: 1; visibility: visible; }
+    to { opacity: 0; visibility: hidden; }
+}
+@keyframes pulseLogo {
+    from { transform: scale(0.9); opacity: 0.8; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); }
+    to { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 20px rgba(255,255,255,0.6)); }
+}
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
