@@ -93,37 +93,59 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
     const renderGroupedTable = (faultList, isResolved, baseColSpan) => {
         if (faultList.length === 0) return '';
         
-        const grouped = {};
+        const grouped = {
+            '🔥 BUGÜN EKLENEN KAYITLAR': [],
+            '📅 ESKİ KAYITLAR': []
+        };
+        
+        const today = new Date();
+        
         faultList.forEach(fault => {
-            const type = fault.jobType ? fault.jobType.toUpperCase() : 'DİĞER KAYITLAR';
-            if (!grouped[type]) grouped[type] = [];
-            grouped[type].push(fault);
+            let isToday = false;
+            if (fault.createdAt) {
+                const fDate = fault.createdAt.toDate();
+                if (fDate.getDate() === today.getDate() && 
+                    fDate.getMonth() === today.getMonth() && 
+                    fDate.getFullYear() === today.getFullYear()) {
+                    isToday = true;
+                }
+            } else {
+                isToday = true;
+            }
+            
+            if (isToday) grouped['🔥 BUGÜN EKLENEN KAYITLAR'].push(fault);
+            else grouped['📅 ESKİ KAYITLAR'].push(fault);
         });
 
         let html = '';
         const currentColSpan = isAdmin ? baseColSpan + 1 : baseColSpan;
         
-        Object.keys(grouped).forEach(type => {
-            let bgColor = '#cbd5e1'; 
-            let textColor = '#0f172a';
+        Object.keys(grouped).forEach(groupName => {
+            if (grouped[groupName].length === 0) return; // Boş grubu atla
             
-            if (type.includes('İSG') || type.includes('GÜVENLİK')) { bgColor = '#ea580c'; textColor = 'white'; } 
-            else if (type.includes('MEKANİK')) { bgColor = '#67e8f9'; } 
-            else if (type.includes('ELEKTRİK')) { bgColor = '#fde047'; } 
-            else if (type.includes('PLANLI')) { bgColor = '#f59e0b'; }
-
+            let groupBg = groupName.includes('BUGÜN') ? '#3b82f6' : '#475569';
+            
             html += `
-                <tr style="background: ${bgColor}; color: ${textColor};">
+                <tr style="background: ${groupBg}; color: white;">
                     <td colspan="${currentColSpan}" style="font-weight: 800; font-size: 1.05rem; padding: 0.6rem; border-left: 5px solid #0f172a; text-align: left;">
-                        ${type} (${grouped[type].length})
+                        ${groupName} (${grouped[groupName].length})
                     </td>
                 </tr>
             `;
 
-            grouped[type].forEach(fault => {
+            grouped[groupName].forEach(fault => {
                 const dateStr = fault.createdAt ? new Date(fault.createdAt.toDate()).toLocaleString('tr-TR') : 'Şimdi';
                 let photoLink = fault.photoUrl ? `<a href="${fault.photoUrl}" target="_blank" style="color:var(--accent)">Foto Gör</a>` : '-';
-                const rowBg = `${bgColor}33`; 
+                
+                // İş türüne göre satır rengi
+                let rowColorBase = '#94a3b8'; // default
+                const jType = fault.jobType ? fault.jobType.toUpperCase() : '';
+                if (jType.includes('İSG') || jType.includes('GÜVENLİK')) { rowColorBase = '#ea580c'; } 
+                else if (jType.includes('MEKANİK')) { rowColorBase = '#06b6d4'; } 
+                else if (jType.includes('ELEKTRİK')) { rowColorBase = '#eab308'; } 
+                else if (jType.includes('PLANLI')) { rowColorBase = '#f59e0b'; }
+
+                const rowBg = `${rowColorBase}33`; 
                 const id = fault.id;
 
                 let assigneeHtml = fault.assignedTo || '-';
