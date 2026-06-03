@@ -155,6 +155,41 @@ form.addEventListener('submit', async (e) => {
 
         await db.collection("arizalar").add(faultData);
 
+        // Yeni Arıza Bildirimini Web3Forms ile Mail At
+        try {
+            const mailDoc = await db.collection('ayarlar').doc('adminEmail').get();
+            if (mailDoc.exists && mailDoc.data().key && mailDoc.data().enabled !== false) {
+                const accessKey = mailDoc.data().key;
+                
+                // FormSubmit görünümünü taklit eden HTML mail içeriği
+                const dashboardLink = window.location.href.replace('index.html', '') + 'dashboard.html';
+                const faultTypeStr = faultData.jobType ? faultData.jobType.toUpperCase() : "ARIZA BİLDİRİMİ";
+                
+                const emailHtml = `
+                    <div style="font-family: Arial, sans-serif; color: #1f2937;">
+                        <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;">${faultData.description}</h2>
+                        <p style="font-size: 1.1rem; color: #4b5563; margin-bottom: 0.5rem;">${faultData.userName}</p>
+                        <p style="font-size: 1.1rem; color: #4b5563; margin-bottom: 1.5rem;">Vardiya: ${faultData.shift}</p>
+                        <a href="${dashboardLink}" style="font-size: 1.1rem; color: #3b82f6; text-decoration: underline; font-weight: bold;">İŞ İSTEK FORM GİRİŞ</a>
+                    </div>
+                `;
+
+                await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        access_key: accessKey,
+                        subject: faultData.machine || "Yeni Arıza", // Konu başlığı Makine Adı
+                        from_name: faultTypeStr, // Gönderen kişi MEKANİK ARIZA vs.
+                        email: "noreply@arizabildirim.com",
+                        message: emailHtml
+                    })
+                });
+            }
+        } catch(e) {
+            console.log("Arıza maili gönderilemedi: ", e);
+        }
+
         successMessage.classList.remove('hidden');
         form.reset();
         
