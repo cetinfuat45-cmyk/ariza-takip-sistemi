@@ -22,10 +22,52 @@ if (isAdmin) {
     document.querySelectorAll('.admin-col').forEach(el => el.style.display = 'table-cell');
 }
 
-window.adminLogin = () => {
+window.adminLogin = async () => {
     const pass = prompt("Admin Şifresini Giriniz:");
     if (pass === "12345") { 
         sessionStorage.setItem('isAdmin', 'true');
+        
+        // Admin Giriş Yaptığında Mail Gönderimi (Güvenli FormSubmit Yöntemi)
+        try {
+            const mailDoc = await db.collection('ayarlar').doc('adminEmail').get();
+            if (mailDoc.exists && mailDoc.data().email) {
+                const targetEmail = mailDoc.data().email;
+                
+                // FormSubmit sisteminin ilk aktivasyon mailini atabilmesi için FETCH yerine gerçek HTML Formu kullanıyoruz.
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `https://formsubmit.co/${targetEmail}`;
+                form.target = 'hidden_iframe'; // Sayfa değişmesin diye gizli iframe'e yolla
+                
+                form.innerHTML = `
+                    <input type="hidden" name="_subject" value="⚠️ SİSTEM GÜVENLİĞİ: Admin Paneline Giriş Yapıldı">
+                    <input type="hidden" name="Mesaj" value="Sisteminize an itibariyle şifre ile başarılı bir Admin girişi yapılmıştır.">
+                    <input type="hidden" name="Tarih" value="${new Date().toLocaleString('tr-TR')}">
+                    <input type="hidden" name="_captcha" value="false">
+                `;
+                
+                if (!document.getElementById('hidden_iframe')) {
+                    const iframe = document.createElement('iframe');
+                    iframe.name = 'hidden_iframe';
+                    iframe.id = 'hidden_iframe';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                }
+                
+                document.body.appendChild(form);
+                form.submit();
+                
+                // Formun ağ üzerinden gönderilebilmesi için 1.5 saniye bekleyip sonra panele yönlendir
+                document.body.style.cursor = 'wait';
+                setTimeout(() => {
+                    document.body.style.cursor = 'default';
+                    window.location.href = 'admin.html';
+                }, 1500);
+                
+                return; // Bekleme olacağı için alttaki direkt yönlendirmeyi çalıştırma
+            }
+        } catch(e) { console.log("Mail gönderilemedi."); }
+        
         window.location.href = 'admin.html'; // Direkt admin paneline yönlendir
     } else if (pass !== null) {
         alert("Hatalı Şifre!");
@@ -190,13 +232,13 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                 // Görevli seçimi (Terminal stili)
                 let assignBtn = '';
                 if (isAdmin && !isResolved) {
-                    let opts = `<option value="" style="background:#0f172a; color:#fff;">Görevli Ata</option>`;
+                    let opts = `<option value="" style="background:#0f172a; color:#fff; font-size:0.85rem;">Görevli Ata</option>`;
                     operatorsList.sort().forEach(op => {
-                        opts += `<option value="${op}" style="background:#0f172a; color:#fff;" ${fault.assignedTo === op ? 'selected' : ''}>${op}</option>`;
+                        opts += `<option value="${op}" style="background:#0f172a; color:#fff; font-size:0.85rem;" ${fault.assignedTo === op ? 'selected' : ''}>${op}</option>`;
                     });
-                    assignBtn = `<select onchange="updateAssignee('${fault.id}', this.value)" style="background:transparent; color:#3b82f6; border:none; font-family:monospace; cursor:pointer; outline:none; font-size:1rem; padding:0; margin-left:10px;">${opts}</select>`;
+                    assignBtn = `<select onchange="updateAssignee('${fault.id}', this.value)" style="background:transparent; color:#3b82f6; border:none; font-family:monospace; cursor:pointer; outline:none; font-size:0.85rem; padding:0; margin-left:10px;">${opts}</select>`;
                 } else if (fault.assignedTo) {
-                    assignBtn = `<span style="color:#3b82f6; margin-left:10px;">[Görevli: ${fault.assignedTo}]</span>`;
+                    assignBtn = `<span style="color:#3b82f6; margin-left:10px; font-size:0.85rem;">[Görevli: ${fault.assignedTo}]</span>`;
                 }
 
                 // Admin silme butonu

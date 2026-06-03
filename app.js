@@ -172,3 +172,23 @@ form.addEventListener('submit', async (e) => {
         submitBtn.innerHTML = 'Talebi Gönder';
     }
 });
+
+// Doldurulan form alanlarının (input, select, textarea) yanıp sönmesi için dinleyici
+document.addEventListener('DOMContentLoaded', () => {
+    const inputs = document.querySelectorAll('input, select, textarea');
+    
+    const checkFilled = (el) => {
+        if (el.value && el.value.trim() !== '') {
+            el.classList.add('input-filled');
+        } else {
+            el.classList.remove('input-filled');
+        }
+    };
+
+    inputs.forEach(el => {
+        el.addEventListener('input', () => checkFilled(el));
+        el.addEventListener('change', () => checkFilled(el));
+        // Sayfa yüklendiğinde mevcut doluları da kontrol et (Örn: tarayıcı otomatik doldurduysa)
+        checkFilled(el);
+    });
+});

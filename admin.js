@@ -173,3 +173,44 @@ window.fetchGoogleSheet = async () => {
         btn.innerHTML = "📥 Tablodan Makine ve Bölümleri Çek";
     }
 };
+
+// Admin Bildirim E-Postası İşlemleri
+settingsRef.doc('adminEmail').onSnapshot(doc => {
+    const el = document.getElementById('input-adminEmail');
+    if (el && doc.exists) {
+        el.value = doc.data().email || '';
+    }
+});
+
+window.saveAdminEmail = async () => {
+    const email = document.getElementById('input-adminEmail').value.trim();
+    if(!email || !email.includes('@')) {
+        alert("Lütfen geçerli bir e-posta adresi giriniz.");
+        return;
+    }
+    try {
+        await settingsRef.doc('adminEmail').set({ email: email }, { merge: true });
+        alert("✅ E-Posta kaydedildi!\n\nŞimdi yan tarafta çıkan SARI renkli 'Sistemi Doğrula' butonuna basmanız gerekiyor. Açılan sekmede 'Ben Robot Değilim' doğrulamasını yapın.");
+        document.getElementById('activateBtn').style.display = 'block';
+    } catch (err) { alert("Kaydedilirken hata oluştu."); }
+};
+
+window.activateEmail = () => {
+    const email = document.getElementById('input-adminEmail').value.trim();
+    if(!email) return;
+    
+    // Yeni sekmede görünür bir form gönder (Captcha'yı manuel çözebilmesi için)
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `https://formsubmit.co/${email}`;
+    form.target = '_blank'; // Yeni sekmede aç
+    
+    form.innerHTML = `
+        <input type="hidden" name="_subject" value="Sistem Aktivasyon Maili">
+        <input type="hidden" name="Mesaj" value="Bu mail sistemin başarıyla FormSubmit'e bağlandığını doğrular.">
+    `;
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+};
