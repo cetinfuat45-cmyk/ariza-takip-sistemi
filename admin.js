@@ -184,10 +184,12 @@ settingsRef.doc('adminEmail').onSnapshot(doc => {
 
 window.saveAdminEmail = async () => {
     const email = document.getElementById('input-adminEmail').value.trim();
+    
     if(!email || !email.includes('@')) {
         alert("Lütfen geçerli bir e-posta adresi giriniz.");
         return;
     }
+    
     try {
         await settingsRef.doc('adminEmail').set({ email: email }, { merge: true });
         alert("✅ E-Posta kaydedildi!\n\nŞimdi yan tarafta çıkan SARI renkli 'Sistemi Doğrula' butonuna basmanız gerekiyor. Açılan sekmede 'Ben Robot Değilim' doğrulamasını yapın.");
