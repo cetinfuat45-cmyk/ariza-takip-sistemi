@@ -99,39 +99,77 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
             const dateObj = fault.createdAt ? fault.createdAt.toDate() : new Date();
             const faultDateStr = `${String(dateObj.getDate()).padStart(2,'0')}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${String(dateObj.getFullYear()).slice(-2)}`;
             
-            let groupName = faultDateStr === todayStr 
-                ? `${faultDateStr} BUGÜN GELEN` 
-                : `${faultDateStr} ESKİ KAYIT`;
-                
-            if (!grouped[groupName]) {
-                grouped[groupName] = [];
+            const rawType = fault.jobType ? fault.jobType.toUpperCase() : 'DİĞER';
+            let jType = rawType;
+            
+            if (rawType.includes('ELEKTRİK')) jType = 'ELEKTRİK';
+            else if (rawType.includes('MEKANİK')) jType = 'MEKANİK';
+            else if (rawType.includes('İSG') || rawType.includes('GÜVENLİ')) jType = 'İŞ GÜVENLİĞİ';
+            else if (rawType.includes('PLANLI')) jType = 'PLANLI BAKIM';
+            else if (rawType.includes('TEKRAR')) jType = 'TEKRAR EDEN ARIZA';
+
+            let groupName;
+            let groupType;
+            
+            if (faultDateStr === todayStr) {
+                groupName = `${jType}`;
+                groupType = 'TODAY';
+            } else {
+                groupName = `${faultDateStr} ESKİ KAYITLAR`;
+                groupType = 'OLD';
             }
-            grouped[groupName].push(fault);
+
+            if (!grouped[groupName]) {
+                grouped[groupName] = { type: groupType, jType: jType, faults: [] };
+            }
+            grouped[groupName].faults.push(fault);
         });
 
         let html = '';
 
-        // Grupları ters kronolojik (yeniden eskiye) sıralayalım
+        // Sıralama: BUGÜN olanlar en üstte (kendi içinde alfabetik İş Türü), sonra ESKİ olanlar (Tarihe göre yeniden eskiye)
         const sortedGroups = Object.keys(grouped).sort((a, b) => {
-            if (a.includes('BUGÜN')) return -1;
-            if (b.includes('BUGÜN')) return 1;
-            return b.localeCompare(a); // "02.06.26" vs "01.06.26" => B önce gelsin
+            const gA = grouped[a];
+            const gB = grouped[b];
+            
+            if (gA.type === 'TODAY' && gB.type === 'OLD') return -1;
+            if (gA.type === 'OLD' && gB.type === 'TODAY') return 1;
+            
+            if (gA.type === 'TODAY' && gB.type === 'TODAY') {
+                return a.localeCompare(b);
+            }
+            
+            if (gA.type === 'OLD' && gB.type === 'OLD') {
+                const timeA = gA.faults[0].createdAt ? gA.faults[0].createdAt.toMillis() : 0;
+                const timeB = gB.faults[0].createdAt ? gB.faults[0].createdAt.toMillis() : 0;
+                return timeB - timeA;
+            }
+            return 0;
         });
 
         sortedGroups.forEach(groupName => {
-            if (grouped[groupName].length === 0) return; 
+            const groupData = grouped[groupName];
+            if (groupData.faults.length === 0) return; 
 
             // Terminal Grup Başlığı
-            let headerColor = groupName.includes('BUGÜN') ? '#3b82f6' : '#94a3b8';
-            let icon = groupName.includes('BUGÜN') ? '🔥' : '📅';
+            let headerColor = '#94a3b8'; 
+            
+            if (groupData.type === 'TODAY') {
+                if (groupData.jType.includes('ELEKTRİK')) { headerColor = '#FFFF00'; }
+                else if (groupData.jType.includes('MEKANİK')) { headerColor = '#00FFFF'; }
+                else if (groupData.jType.includes('GÜVENLİ')) { headerColor = '#FF0000'; }
+                else if (groupData.jType.includes('PLANLI')) { headerColor = '#FFA500'; }
+                else if (groupData.jType.includes('TEKRAR')) { headerColor = '#FF00FF'; }
+                else { headerColor = '#3b82f6'; }
+            }
             
             html += `
-                <div style="margin-top: 1.2rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.08); border-left: 5px solid ${headerColor}; color: white; font-weight: bold; letter-spacing: 1px;">
-                    > ${icon} ${groupName} (${grouped[groupName].length} Kayıt)
+                <div style="margin-top: 1.2rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.08); border-left: 5px solid ${headerColor}; color: ${headerColor}; font-weight: bold; letter-spacing: 1px;">
+                    ${groupName} (${groupData.faults.length} Kayıt)
                 </div>
             `;
 
-            grouped[groupName].forEach(fault => {
+            groupData.faults.forEach(fault => {
                 const dateObj = fault.createdAt ? fault.createdAt.toDate() : new Date();
                 
                 // Satırlarda ARTIK SADECE SAAT var, Tarih Yok.
@@ -167,13 +205,16 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                     adminBtn = `<span onclick="deleteFault('${fault.id}')" style="color:#ef4444; cursor:pointer; margin-left:10px;">[SİL]</span>`;
                 }
 
+                // Sadece ESKİ kayıtlarda (tarihsel gruplamada) İş Türünü satırda göster
+                let jobTypeDisplay = groupData.type === 'OLD' ? `${jType || 'BİLİNMİYOR'} ` : '';
+
                 // Satırları Tek Satır (Single Line) Terminal formatında oluştur
                 html += `
                     <div class="term-line" style="margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
                         <span class="term-time">[${timeStr}]</span>
                         <span class="term-content">
-                            <span style="color: ${textColor}; font-weight:bold;">${statusIcon} ${jType || 'BİLİNMİYOR'} </span>
-                            <span style="color: ${textColor}; font-weight:normal; font-size:0.9em;">@ ${fault.machine || ''}</span>
+                            <span style="color: ${textColor}; font-weight:bold;">${statusIcon} ${jobTypeDisplay}</span>
+                            <span style="color: ${textColor}; font-weight:normal; font-size:0.9em;">${fault.machine || ''}</span>
                             <span style="color: #cbd5e1;"> -> ${fault.description || '-'}</span> 
                             <span style="color: #64748b; font-size: 0.85rem; margin-left: 5px;">[Bldrn: ${fault.userName || '-'}]</span>
                             ${photoLink} ${assignBtn} ${adminBtn}
