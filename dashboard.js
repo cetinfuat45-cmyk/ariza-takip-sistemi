@@ -91,76 +91,98 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
     const renderTerminal = (faultList, isResolved) => {
         if (faultList.length === 0) return '<div class="term-line" style="color:#888;">[SİSTEM] Kayıt bulunamadı...</div>';
         
-        let html = '';
+        const grouped = {
+            'BUGÜN EKLENEN KAYITLAR': [],
+            'ESKİ KAYITLAR': []
+        };
+        
         const today = new Date();
-        let todayPrinted = false;
-        let olderPrinted = false;
-
+        
         faultList.forEach(fault => {
             let isToday = false;
-            const dateObj = fault.createdAt ? fault.createdAt.toDate() : new Date();
-            if (dateObj.getDate() === today.getDate() && 
-                dateObj.getMonth() === today.getMonth() && 
-                dateObj.getFullYear() === today.getFullYear()) {
+            if (fault.createdAt) {
+                const fDate = fault.createdAt.toDate();
+                if (fDate.getDate() === today.getDate() && 
+                    fDate.getMonth() === today.getMonth() && 
+                    fDate.getFullYear() === today.getFullYear()) {
+                    isToday = true;
+                }
+            } else {
                 isToday = true;
             }
-
-            if (isToday && !todayPrinted) {
-                html += `<div class="term-line" style="color:#94a3b8; font-style:italic;">> Bugünkü kayıtlar taranıyor...</div>`;
-                todayPrinted = true;
-            } else if (!isToday && !olderPrinted) {
-                html += `<div class="term-line" style="color:#94a3b8; font-style:italic; margin-top:1rem;">> Geçmiş veriler yükleniyor...</div>`;
-                olderPrinted = true;
-            }
-
-            // Kısa Tarih ve Saat formatı: 03.06 08:30:14
-            const day = String(dateObj.getDate()).padStart(2, '0');
-            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const shortDate = `${day}.${month}`;
-            const timeStr = dateObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); 
-            const dateTimeStr = `${shortDate} ${timeStr}`;
             
-            // Renkler
-            let textColor = '#ffffff';
-            const jType = fault.jobType ? fault.jobType.toUpperCase() : '';
-            if (jType.includes('İSG') || jType.includes('GÜVENLİ')) { textColor = '#FF0000'; } 
-            else if (jType.includes('MEKANİK')) { textColor = '#00FFFF'; } 
-            else if (jType.includes('ELEKTRİK')) { textColor = '#FFFF00'; } 
-            else if (jType.includes('PLANLI')) { textColor = '#FFA500'; }
+            if (isToday) grouped['BUGÜN EKLENEN KAYITLAR'].push(fault);
+            else grouped['ESKİ KAYITLAR'].push(fault);
+        });
 
-            const statusIcon = isResolved ? '✓ ✓' : '⚡';
-            let photoLink = fault.photoUrl ? `<a href="${fault.photoUrl}" target="_blank" style="color:#a78bfa; text-decoration:none;">[FOTO]</a>` : '';
+        let html = '';
+
+        Object.keys(grouped).forEach(groupName => {
+            if (grouped[groupName].length === 0) return; 
+
+            // Terminal Grup Başlığı
+            let headerColor = groupName.includes('BUGÜN') ? '#3b82f6' : '#94a3b8';
+            let icon = groupName.includes('BUGÜN') ? '🔥' : '📅';
             
-            // Görevli seçimi (Terminal stili)
-            let assignBtn = '';
-            if (isAdmin && !isResolved) {
-                let opts = `<option value="" style="background:#0f172a; color:#fff;">Görevli Ata</option>`;
-                operatorsList.sort().forEach(op => {
-                    opts += `<option value="${op}" style="background:#0f172a; color:#fff;" ${fault.assignedTo === op ? 'selected' : ''}>${op}</option>`;
-                });
-                assignBtn = `<select onchange="updateAssignee('${fault.id}', this.value)" style="background:transparent; color:#3b82f6; border:none; font-family:monospace; cursor:pointer; outline:none; font-size:1rem; padding:0; margin-left:10px;">${opts}</select>`;
-            } else if (fault.assignedTo) {
-                assignBtn = `<span style="color:#3b82f6; margin-left:10px;">[Görevli: ${fault.assignedTo}]</span>`;
-            }
-
-            // Admin silme butonu
-            let adminBtn = '';
-            if (isAdmin) {
-                adminBtn = `<span onclick="deleteFault('${fault.id}')" style="color:#ef4444; cursor:pointer; margin-left:10px;">[SİL]</span>`;
-            }
-
-            // Satırları Tek Satır (Single Line) Terminal formatında oluştur
             html += `
-                <div class="term-line" style="margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
-                    <span class="term-time">[${dateTimeStr}]</span>
-                    <span class="term-content">
-                        <span style="color: ${textColor}; font-weight:bold;">${statusIcon} ${jType || 'BİLİNMİYOR'} @ ${fault.machine || ''}</span>
-                        <span style="color: #cbd5e1;"> -> ${fault.description || '-'}</span> 
-                        <span style="color: #64748b; font-size: 0.85rem; margin-left: 5px;">[${fault.costCenter || '-'} | Bldrn: ${fault.userName || '-'}]</span>
-                        ${photoLink} ${assignBtn} ${adminBtn}
-                    </span>
+                <div style="margin-top: 1.2rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.08); border-left: 5px solid ${headerColor}; color: white; font-weight: bold; letter-spacing: 1px;">
+                    > ${icon} [ ${groupName} ] (${grouped[groupName].length} Kayıt)
                 </div>
             `;
+
+            grouped[groupName].forEach(fault => {
+                const dateObj = fault.createdAt ? fault.createdAt.toDate() : new Date();
+                
+                // Kısa Tarih ve Saat formatı: 03.06 08:30:14
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const shortDate = `${day}.${month}`;
+                const timeStr = dateObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); 
+                const dateTimeStr = `${shortDate} ${timeStr}`;
+                
+                // Renkler
+                let textColor = '#ffffff';
+                const jType = fault.jobType ? fault.jobType.toUpperCase() : '';
+                if (jType.includes('İSG') || jType.includes('GÜVENLİ')) { textColor = '#FF0000'; } 
+                else if (jType.includes('MEKANİK')) { textColor = '#00FFFF'; } 
+                else if (jType.includes('ELEKTRİK')) { textColor = '#FFFF00'; } 
+                else if (jType.includes('PLANLI')) { textColor = '#FFA500'; }
+
+                const statusIcon = isResolved ? '✓ ✓' : '⚡';
+                let photoLink = fault.photoUrl ? `<a href="${fault.photoUrl}" target="_blank" style="color:#a78bfa; text-decoration:none;">[FOTO]</a>` : '';
+                
+                // Görevli seçimi (Terminal stili)
+                let assignBtn = '';
+                if (isAdmin && !isResolved) {
+                    let opts = `<option value="" style="background:#0f172a; color:#fff;">Görevli Ata</option>`;
+                    operatorsList.sort().forEach(op => {
+                        opts += `<option value="${op}" style="background:#0f172a; color:#fff;" ${fault.assignedTo === op ? 'selected' : ''}>${op}</option>`;
+                    });
+                    assignBtn = `<select onchange="updateAssignee('${fault.id}', this.value)" style="background:transparent; color:#3b82f6; border:none; font-family:monospace; cursor:pointer; outline:none; font-size:1rem; padding:0; margin-left:10px;">${opts}</select>`;
+                } else if (fault.assignedTo) {
+                    assignBtn = `<span style="color:#3b82f6; margin-left:10px;">[Görevli: ${fault.assignedTo}]</span>`;
+                }
+
+                // Admin silme butonu
+                let adminBtn = '';
+                if (isAdmin) {
+                    adminBtn = `<span onclick="deleteFault('${fault.id}')" style="color:#ef4444; cursor:pointer; margin-left:10px;">[SİL]</span>`;
+                }
+
+                // Satırları Tek Satır (Single Line) Terminal formatında oluştur
+                html += `
+                    <div class="term-line" style="margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                        <span class="term-time">[${dateTimeStr}]</span>
+                        <span class="term-content">
+                            <span style="color: ${textColor}; font-weight:bold;">${statusIcon} ${jType || 'BİLİNMİYOR'} </span>
+                            <span style="color: ${textColor}; font-weight:normal; font-size:0.9em;">@ ${fault.machine || ''}</span>
+                            <span style="color: #cbd5e1;"> -> ${fault.description || '-'}</span> 
+                            <span style="color: #64748b; font-size: 0.85rem; margin-left: 5px;">[Bldrn: ${fault.userName || '-'}]</span>
+                            ${photoLink} ${assignBtn} ${adminBtn}
+                        </span>
+                    </div>
+                `;
+            });
         });
         
         return html;

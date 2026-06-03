@@ -24,7 +24,6 @@
             <div class="dashboard-header">
                 <div>
                     <h1>🔧 Arıza Takip Paneli</h1>
-                    <p>Bildirilen tüm arızaları görüntüleyin ve çözülenleri işaretleyin.</p>
                 </div>
                 <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
                     <!-- Admin Giriş Yapınca Görünecekler -->
@@ -44,10 +43,6 @@
 
             <!-- Bekleyen Arızalar Terminali -->
             <div class="terminal-container">
-                <div class="terminal-header">
-                    <span class="pulse-icon">📈</span> Arıza Console Terminal
-                    <span style="float: right; font-size: 0.8rem; color: #888;" id="totalOpenCount">0 kayıt</span>
-                </div>
                 <div class="terminal-body" id="faultTerminal">
                     <!-- Terminal Logları Buraya Gelecek -->
                 </div>
@@ -55,10 +50,6 @@
 
             <!-- Çözülen Arızalar Terminali -->
             <div class="terminal-container mt-4">
-                <div class="terminal-header">
-                    <span class="pulse-icon" style="color: #4ade80;">✓</span> Çözülenler Log
-                    <span style="float: right; font-size: 0.8rem; color: #888;" id="totalResolvedCount">0 kayıt</span>
-                </div>
                 <div class="terminal-body" id="resolvedTerminal">
                     <!-- Terminal Logları Buraya Gelecek -->
                 </div>
