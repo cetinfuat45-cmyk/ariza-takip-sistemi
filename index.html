@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <title>Arıza Bildirim Formu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; z-index: 10;">
+        <button onclick="window.location.href='dashboard.html'" style="padding: 0.5rem 1rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; font-weight: 500;">🔍 Arıza Takip Paneli</button>
+    </div>
+    <div class="container">
+        <div class="glass-panel">
+            <div class="header">
+                <div class="icon-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.7 13.7 4.5 4.5a2.12 2.12 0 1 1-3 3l-4.5-4.5a6 6 0 1 1 3-3Z"/><path d="m10 10-1.5 1.5"/></svg>
+                </div>
+                <h1>Arıza & İş İsteği Bildirimi</h1>
+                <p>Sisteme yeni bir bakım veya arıza kaydı ekleyin.</p>
+            </div>
+            
+            <form id="faultForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userName">Arızayı Bildiren (Ad Soyad)</label>
+                        <input type="text" id="userName" required placeholder="Örn: Ahmet Yılmaz">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="costCenter">1. Bölümler / Maliyet Merkezi</label>
+                        <select id="costCenter" required>
+                            <option value="">Seçiniz... (Önce Admin'den Ekleyin)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="machine">2. Makineler / Ekipmanlar</label>
+                        <select id="machine" required>
+                            <option value="">Seçiniz... (Önce Admin'den Ekleyin)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="shift">3. Vardiya</label>
+                        <select id="shift" required>
+                            <option value="">Seçiniz... (Önce Admin'den Ekleyin)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobType">4. İş Türü</label>
+                        <select id="jobType" required>
+                            <option value="">Seçiniz... (Önce Admin'den Ekleyin)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Arıza / İstek Açıklaması</label>
+                    <textarea id="description" rows="3" required placeholder="Sorunu detaylıca açıklayın..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="photo">Fotoğraf (Opsiyonel)</label>
+                    <input type="file" id="photo" accept="image/*" style="padding: 0.5rem; background: rgba(0,0,0,0.2);">
+                </div>
+
+                <button type="submit" id="submitBtn">
+                    <span>Bildirimi Gönder</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+                
+                <div id="successMessage" class="hidden">
+                    🎉 Arıza kaydınız başarıyla oluşturuldu!
+                </div>
+            </form>
+            
+            <div class="footer-link">
+                <a href="dashboard.html">Yönetim Paneline Git →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK'ları -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <title>Bakım Takip Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container" style="max-width: 1400px;">
+        <div class="glass-panel">
+            <div class="dashboard-header">
+                <div>
+                    <h1>🔧 Arıza Takip Paneli</h1>
+                    <p>Bildirilen tüm arızaları görüntüleyin ve çözülenleri işaretleyin.</p>
+                </div>
+                <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+                    <!-- Admin Giriş Yapınca Görünecekler -->
+                    <div id="adminPanel" style="display:none; align-items: center; gap: 1rem;">
+                        <span style="color: var(--accent); font-weight: bold;">👑 Admin Aktif</span>
+                        <a href="admin.html" style="color: white; text-decoration:none; background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">⚙️ Ayarlar</a>
+                        <button onclick="adminLogout()" style="margin:0; padding: 0.5rem 1rem; border-radius: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); width:auto;">Çıkış Yap</button>
+                    </div>
+
+                    <!-- Herkese Açık Butonlar -->
+                    <div id="publicPanel" style="display:flex; gap: 1rem;">
+                        <button id="loginBtn" onclick="adminLogin()" style="margin:0; padding: 0.5rem 1rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; font-weight: 500; width:auto;">🔐 Admin Girişi</button>
+                        <button onclick="window.location.href='index.html'" style="margin:0; padding: 0.5rem 1rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; font-weight: 500; width:auto;">← Ana Sayfaya Dön</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Açık Arızalar</h3>
+                    <div class="number text-danger" id="totalOpen">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Çözülenler</h3>
+                    <div class="number text-success" id="totalResolved">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Toplam Kayıt</h3>
+                    <div class="number" id="totalToday">0</div>
+                </div>
+            </div>
+
+            <!-- Bekleyen Arızalar -->
+            <h2 style="color:white; margin-bottom: 1rem;">🔴 Bekleyen Arızalar</h2>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Bildiren</th>
+                            <th>Bölüm</th>
+                            <th>Makine</th>
+                            <th>Vardiya</th>
+                            <th>İş Türü</th>
+                            <th>Açıklama</th>
+                            <th>Foto</th>
+                            <th>Görevli</th>
+                            <th>Durum</th>
+                            <th class="admin-col" style="display:none;">Admin İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="faultTableBody">
+                        <tr><td colspan="11" style="text-align:center;">Yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Çözülmüş Arızalar -->
+            <h2 style="color:white; margin: 2rem 0 1rem;">🟢 Çözülen Arızalar</h2>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Bildirim Tarihi</th>
+                            <th>Çözüm Tarihi</th>
+                            <th>Bildiren</th>
+                            <th>Bölüm</th>
+                            <th>Makine</th>
+                            <th>Vardiya</th>
+                            <th>İş Türü</th>
+                            <th>Açıklama</th>
+                            <th>Foto</th>
+                            <th>Görevli</th>
+                            <th>Durum</th>
+                            <th class="admin-col" style="display:none;">Admin İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resolvedTableBody">
+                        <tr><td colspan="12" style="text-align:center;">Yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

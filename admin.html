@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <title>Sistem Ayarları & Admin Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .admin-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--panel-border); border-radius: 16px; padding: 1.5rem; }
+        .admin-card h3 { color: white; margin-bottom: 1rem; font-size: 1.1rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 0.5rem; }
+        .list-container { max-height: 200px; overflow-y: auto; margin-bottom: 1rem; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 0.5rem 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .btn-delete { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: none; padding: 0.2rem 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin:0; width: auto; }
+        .btn-delete:hover { background: var(--danger); color: white; transform: none; box-shadow: none; }
+        .add-row { display: flex; gap: 0.5rem; }
+        .add-row input { padding: 0.5rem; font-size: 0.9rem; }
+        .add-row button { margin: 0; padding: 0.5rem 1rem; width: auto; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="glass-panel">
+            <div class="dashboard-header">
+                <div>
+                    <h1>⚙️ Admin Paneli (Ayarlar)</h1>
+                    <p>Açılır listelerde görünecek isimleri buradan yönetin.</p>
+                </div>
+                <div class="footer-link" style="margin-top:0">
+                    <a href="dashboard.html">← Panele Dön</a>
+                </div>
+            </div>
+
+            <div class="admin-grid">
+                <!-- Toplu Veri Çekme -->
+                <div class="admin-card" style="grid-column: 1 / -1; border: 2px dashed var(--accent);">
+                    <h3>🔗 Google Sheets (Excel) Otomatik Güncelleme</h3>
+                    <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 1rem;">Maliyet Merkezleri ve Makineler listenizi doğrudan Google Sheets tablonuzdan tek tuşla güncelleyin.</p>
+                    <button onclick="fetchGoogleSheet()" id="syncBtn" style="width:100%; background: var(--accent); font-size: 1.1rem; padding: 1rem;">📥 Tablodan Makine ve Bölümleri Çek</button>
+                </div>
+
+                <!-- Bölümler -->
+                <div class="admin-card">
+                    <h3>1. Bölümler / Maliyet Merkezi</h3>
+                    <div class="list-container" id="list-departments">Yükleniyor...</div>
+                    <div class="add-row">
+                        <input type="text" id="input-departments" placeholder="Yeni Ekle">
+                        <button onclick="addItem('departments')">Ekle</button>
+                    </div>
+                </div>
+
+                <!-- Makineler -->
+                <div class="admin-card">
+                    <h3>2. Makineler / Ekipmanlar</h3>
+                    <div class="list-container" id="list-machines">Yükleniyor...</div>
+                    <div class="add-row">
+                        <input type="text" id="input-machines" placeholder="Yeni Ekle">
+                        <button onclick="addItem('machines')">Ekle</button>
+                    </div>
+                </div>
+
+                <!-- Vardiyalar -->
+                <div class="admin-card">
+                    <h3>3. Vardiyalar</h3>
+                    <div class="list-container" id="list-shifts">Yükleniyor...</div>
+                    <div class="add-row">
+                        <input type="text" id="input-shifts" placeholder="Yeni Ekle (Örn: 08-16)">
+                        <button onclick="addItem('shifts')">Ekle</button>
+                    </div>
+                </div>
+
+                <!-- İş Türü -->
+                <div class="admin-card">
+                    <h3>4. İş Türü</h3>
+                    <div class="list-container" id="list-jobTypes">Yükleniyor...</div>
+                    <div class="add-row">
+                        <input type="text" id="input-jobTypes" placeholder="Yeni Ekle">
+                        <button onclick="addItem('jobTypes')">Ekle</button>
+                    </div>
+                </div>
+
+                <!-- Operatörler -->
+                <div class="admin-card">
+                    <h3>5. Bakım Operatörleri</h3>
+                    <div class="list-container" id="list-operators">Yükleniyor...</div>
+                    <div class="add-row">
+                        <input type="text" id="input-operators" placeholder="Örn: Engin Vardar">
+                        <button onclick="addItem('operators')">Ekle</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

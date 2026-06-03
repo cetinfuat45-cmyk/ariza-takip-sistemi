@@ -1,0 +1,121 @@
+/* (Önceki CSS kodları korunarak genişletildi) */
+:root {
+    --bg-color: #0f172a;
+    --panel-bg: rgba(30, 41, 59, 0.7);
+    --panel-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --input-bg: rgba(15, 23, 42, 0.6);
+    --input-border: rgba(255, 255, 255, 0.15);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+body {
+    background-color: var(--bg-color);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.container { width: 100%; max-width: 600px; }
+.dashboard-container { width: 100%; max-width: 98vw; margin: auto; } /* Tam sayfa tablo için */
+
+.glass-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--panel-border);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.header { text-align: center; margin-bottom: 2rem; }
+.icon-container { width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent), #8b5cf6); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
+.icon-container svg { color: white; }
+h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header p { color: var(--text-secondary); font-size: 0.95rem; }
+
+.form-group { margin-bottom: 1.25rem; }
+.form-row { display: flex; gap: 1rem; }
+.form-row .form-group { flex: 1; }
+label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary); }
+
+input, select, textarea {
+    width: 100%; background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 10px; padding: 0.875rem 1rem; color: white; font-size: 0.95rem; transition: all 0.2s; outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+select option { background-color: var(--bg-color); color: white; }
+
+button {
+    width: 100%; background: var(--accent); color: white; border: none; border-radius: 10px; padding: 1rem; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; margin-top: 1rem;
+}
+button:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
+button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+.hidden { display: none !important; }
+#successMessage { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 10px; text-align: center; margin-top: 1rem; font-weight: 500; animation: fadeIn 0.3s; }
+.footer-link { text-align: center; margin-top: 1.5rem; }
+.footer-link a { color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+.footer-link a:hover { color: var(--accent); }
+
+/* Dashboard Styles */
+.dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--panel-border); border-radius: 16px; padding: 1.5rem; }
+.stat-card h3 { color: var(--text-secondary); font-size: 0.875rem; font-weight: 500; }
+.stat-card .value { font-size: 2rem; font-weight: 700; margin-top: 0.5rem; color: white; }
+
+.table-container { overflow-x: auto; white-space: nowrap; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--panel-border); }
+th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(0,0,0,0.2); }
+.status-badge { padding: 0.25rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+.status-acik { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+.status-cozuldu { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+    display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+.modal-content {
+    background: var(--bg-color); width: 100%; max-width: 600px;
+    border-radius: 20px; padding: 2rem; border: 1px solid var(--panel-border);
+    max-height: 90vh; overflow-y: auto;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--panel-border); padding-bottom: 1rem;}
+.modal-title { font-size: 1.25rem; font-weight: bold; color: white; }
+.close-modal { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0; margin: 0; width: auto; }
+.close-modal:hover { color: var(--danger); transform: none; box-shadow: none;}
+
+@media (max-width: 768px) {
+    body { padding: 0.5rem; }
+    .glass-panel { padding: 1.25rem; border-radius: 16px; }
+    .dashboard-header { flex-direction: column; text-align: center; gap: 1rem; }
+    .header-actions { flex-direction: column; width: 100%; }
+    #adminPanel, #publicPanel { flex-wrap: wrap; justify-content: center; width: 100%; }
+    .stat-cards { grid-template-columns: 1fr; }
+    h1 { font-size: 1.4rem; }
+    .form-row { flex-direction: column; gap: 0; }
+    button { padding: 0.8rem; font-size: 0.95rem; }
+    .table-container { padding-bottom: 1rem; }
+    .admin-grid { grid-template-columns: 1fr; }
+}
