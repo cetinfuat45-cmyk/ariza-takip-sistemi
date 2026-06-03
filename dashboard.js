@@ -30,7 +30,7 @@ window.adminLogin = async () => {
         // Admin Giriş Yaptığında Mail Gönderimi (Web3Forms API - Doğrulamasız)
         try {
             const mailDoc = await db.collection('ayarlar').doc('adminEmail').get();
-            if (mailDoc.exists && mailDoc.data().key) {
+            if (mailDoc.exists && mailDoc.data().key && mailDoc.data().enabled !== false) {
                 const accessKey = mailDoc.data().key;
                 
                 // Arka planda sessizce API isteği at (Doğrulama veya Captcha istemez)

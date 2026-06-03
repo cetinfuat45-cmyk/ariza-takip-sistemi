@@ -96,7 +96,13 @@
 
                 <!-- Bildirim API Anahtarı -->
                 <div class="admin-card" style="border: 1px solid #10b981;">
-                    <h3>📧 E-Posta Bildirim Sistemi</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                        <h3 style="margin:0;">📧 E-Posta Bildirim Sistemi</h3>
+                        <label class="switch" title="Mail Gönderimini Aç/Kapat">
+                            <input type="checkbox" id="toggle-mailEnabled" onchange="toggleMailSystem()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                     <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1rem;">Robot testleriyle ve aktivasyon mailleriyle UĞRAŞMAMAK İÇİN buraya mail adresinizi değil, <b>web3forms.com</b>'dan aldığınız şifreyi (Access Key) yapıştırın.</p>
                     <div class="add-row">
                         <input type="text" id="input-adminEmail" placeholder="Örn: 1a2b3c4d-5e6f...">

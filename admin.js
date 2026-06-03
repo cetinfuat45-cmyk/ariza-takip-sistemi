@@ -177,14 +177,31 @@ window.fetchGoogleSheet = async () => {
 // Admin Bildirim API İşlemleri
 settingsRef.doc('adminEmail').onSnapshot(doc => {
     const el = document.getElementById('input-adminEmail');
-    if (el && doc.exists) {
-        el.value = doc.data().key || '';
-        if(doc.data().key && doc.data().key.length > 20) {
-            const btn = document.getElementById('testBtn');
+    const toggle = document.getElementById('toggle-mailEnabled');
+    if (doc.exists) {
+        if(el) el.value = doc.data().key || '';
+        if(toggle) toggle.checked = doc.data().enabled !== false; // Varsayılan olarak açık (true)
+        
+        const btn = document.getElementById('testBtn');
+        if(doc.data().key && doc.data().key.length > 20 && toggle && toggle.checked) {
             if(btn) btn.style.display = 'block';
+        } else {
+            if(btn) btn.style.display = 'none';
         }
     }
 });
+
+window.toggleMailSystem = async () => {
+    const isEnabled = document.getElementById('toggle-mailEnabled').checked;
+    try {
+        await settingsRef.doc('adminEmail').set({ enabled: isEnabled }, { merge: true });
+        if(isEnabled) {
+            alert("✅ Mail sistemi AÇILDI. Artık girişlerde bildirim alacaksınız.");
+        } else {
+            alert("❌ Mail sistemi KAPATILDI. Artık şifre girilse bile mail atılmayacak.");
+        }
+    } catch (err) { alert("Ayar kaydedilemedi."); }
+};
 
 window.saveAdminEmail = async () => {
     const key = document.getElementById('input-adminEmail').value.trim();
