@@ -27,44 +27,24 @@ window.adminLogin = async () => {
     if (pass === "12345") { 
         sessionStorage.setItem('isAdmin', 'true');
         
-        // Admin Giriş Yaptığında Mail Gönderimi (Güvenli FormSubmit Yöntemi)
+        // Admin Giriş Yaptığında Mail Gönderimi (Web3Forms API - Doğrulamasız)
         try {
             const mailDoc = await db.collection('ayarlar').doc('adminEmail').get();
-            if (mailDoc.exists && mailDoc.data().email) {
-                const targetEmail = mailDoc.data().email;
+            if (mailDoc.exists && mailDoc.data().key) {
+                const accessKey = mailDoc.data().key;
                 
-                // FormSubmit sisteminin ilk aktivasyon mailini atabilmesi için FETCH yerine gerçek HTML Formu kullanıyoruz.
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `https://formsubmit.co/${targetEmail}`;
-                form.target = 'hidden_iframe'; // Sayfa değişmesin diye gizli iframe'e yolla
-                
-                form.innerHTML = `
-                    <input type="hidden" name="_subject" value="⚠️ SİSTEM GÜVENLİĞİ: Admin Paneline Giriş Yapıldı">
-                    <input type="hidden" name="Mesaj" value="Sisteminize an itibariyle şifre ile başarılı bir Admin girişi yapılmıştır.">
-                    <input type="hidden" name="Tarih" value="${new Date().toLocaleString('tr-TR')}">
-                    <input type="hidden" name="_captcha" value="false">
-                `;
-                
-                if (!document.getElementById('hidden_iframe')) {
-                    const iframe = document.createElement('iframe');
-                    iframe.name = 'hidden_iframe';
-                    iframe.id = 'hidden_iframe';
-                    iframe.style.display = 'none';
-                    document.body.appendChild(iframe);
-                }
-                
-                document.body.appendChild(form);
-                form.submit();
-                
-                // Formun ağ üzerinden gönderilebilmesi için 1.5 saniye bekleyip sonra panele yönlendir
-                document.body.style.cursor = 'wait';
-                setTimeout(() => {
-                    document.body.style.cursor = 'default';
-                    window.location.href = 'admin.html';
-                }, 1500);
-                
-                return; // Bekleme olacağı için alttaki direkt yönlendirmeyi çalıştırma
+                // Arka planda sessizce API isteği at (Doğrulama veya Captcha istemez)
+                await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        access_key: accessKey,
+                        subject: "⚠️ SİSTEM GÜVENLİĞİ: Admin Paneline Giriş Yapıldı",
+                        from_name: "Bakım Sistemi",
+                        email: "sistem@bildirim.com",
+                        message: `Sisteminize an itibariyle şifre ile başarılı bir Admin girişi yapılmıştır.\nTarih: ${new Date().toLocaleString('tr-TR')}`
+                    })
+                });
             }
         } catch(e) { console.log("Mail gönderilemedi."); }
         

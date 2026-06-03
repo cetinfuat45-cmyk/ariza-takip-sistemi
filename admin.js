@@ -174,45 +174,68 @@ window.fetchGoogleSheet = async () => {
     }
 };
 
-// Admin Bildirim E-Postası İşlemleri
+// Admin Bildirim API İşlemleri
 settingsRef.doc('adminEmail').onSnapshot(doc => {
     const el = document.getElementById('input-adminEmail');
     if (el && doc.exists) {
-        el.value = doc.data().email || '';
+        el.value = doc.data().key || '';
+        if(doc.data().key && doc.data().key.length > 20) {
+            const btn = document.getElementById('testBtn');
+            if(btn) btn.style.display = 'block';
+        }
     }
 });
 
 window.saveAdminEmail = async () => {
-    const email = document.getElementById('input-adminEmail').value.trim();
+    const key = document.getElementById('input-adminEmail').value.trim();
     
-    if(!email || !email.includes('@')) {
-        alert("Lütfen geçerli bir e-posta adresi giriniz.");
+    if(key.includes('@')) {
+        alert("HATA: Buraya e-posta adresinizi DEĞİL, web3forms.com adresinden kopyaladığınız uzun şifreyi (Access Key) yazmalısınız.");
+        return;
+    }
+    if(!key || key.length < 25 || !key.includes('-')) {
+        alert("HATA: Girdiğiniz kod geçersiz. Lütfen web3forms'tan aldığınız tireli şifreyi eksiksiz kopyalayın.");
         return;
     }
     
     try {
-        await settingsRef.doc('adminEmail').set({ email: email }, { merge: true });
-        alert("✅ E-Posta kaydedildi!\n\nŞimdi yan tarafta çıkan SARI renkli 'Sistemi Doğrula' butonuna basmanız gerekiyor. Açılan sekmede 'Ben Robot Değilim' doğrulamasını yapın.");
-        document.getElementById('activateBtn').style.display = 'block';
+        await settingsRef.doc('adminEmail').set({ key: key }, { merge: true });
+        alert("✅ Şifre başarıyla kaydedildi! Yan tarafta çıkan MAVİ renkli 'Test Et' butonuna basarak sistemi deneyebilirsiniz.");
+        document.getElementById('testBtn').style.display = 'block';
     } catch (err) { alert("Kaydedilirken hata oluştu."); }
 };
 
-window.activateEmail = () => {
-    const email = document.getElementById('input-adminEmail').value.trim();
-    if(!email) return;
+window.testEmail = async () => {
+    const key = document.getElementById('input-adminEmail').value.trim();
+    if(!key) return;
     
-    // Yeni sekmede görünür bir form gönder (Captcha'yı manuel çözebilmesi için)
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `https://formsubmit.co/${email}`;
-    form.target = '_blank'; // Yeni sekmede aç
+    const btn = document.getElementById('testBtn');
+    btn.innerText = "Gönderiliyor...";
+    btn.disabled = true;
     
-    form.innerHTML = `
-        <input type="hidden" name="_subject" value="Sistem Aktivasyon Maili">
-        <input type="hidden" name="Mesaj" value="Bu mail sistemin başarıyla FormSubmit'e bağlandığını doğrular.">
-    `;
-    
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+    try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                access_key: key,
+                subject: "✅ SİSTEM TESTİ BAŞARILI",
+                from_name: "Bakım Sistemi Test",
+                email: "test@sistem.com",
+                message: `Tebrikler! Web3Forms API bağlantınız kusursuz çalışıyor.\nTarih: ${new Date().toLocaleString('tr-TR')}`
+            })
+        });
+        
+        const result = await response.json();
+        if(result.success) {
+            alert("✅ Test maili BAŞARIYLA gönderildi! Lütfen mail kutunuzu (ve gereksiz klasörünü) kontrol edin.");
+        } else {
+            alert("❌ Hata: " + result.message);
+        }
+    } catch(e) {
+        alert("Bağlantı hatası oluştu.");
+    } finally {
+        btn.innerText = "Test Et";
+        btn.disabled = false;
+    }
 };
