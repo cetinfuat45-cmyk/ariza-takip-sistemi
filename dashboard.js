@@ -137,7 +137,7 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
 
                 let adminCol = '';
                 if (isAdmin) {
-                    adminCol = `<td style="text-align:center;">
+                    adminCol = `<td data-label="İşlem" style="text-align:center;">
                         <button onclick="deleteFault('${id}')" style="background:transparent; border:none; color:#ef4444; padding:0; margin:0; width:auto; font-size:1.3rem; cursor:pointer;" title="Kayıt Sil">🗑️</button>
                     </td>`;
                 }
@@ -145,16 +145,16 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                 if (!isResolved) {
                     html += `
                         <tr style="background: ${rowBg}; color: white;">
-                            <td>${dateStr}</td>
-                            <td>${fault.userName || '-'}</td>
-                            <td>${fault.costCenter || '-'}</td>
-                            <td>${fault.machine || '-'}</td>
-                            <td>${fault.shift || '-'}</td>
-                            <td><b>${fault.jobType || '-'}</b></td>
-                            <td style="max-width: 200px; overflow:hidden; text-overflow:ellipsis;">${fault.description || '-'}</td>
-                            <td>${photoLink}</td>
-                            <td>${assigneeHtml}</td>
-                            <td><span class="status-badge status-acik">Açık</span></td>
+                            <td data-label="Tarih">${dateStr}</td>
+                            <td data-label="Bildiren">${fault.userName || '-'}</td>
+                            <td data-label="Bölüm">${fault.costCenter || '-'}</td>
+                            <td data-label="Makine">${fault.machine || '-'}</td>
+                            <td data-label="Vardiya">${fault.shift || '-'}</td>
+                            <td data-label="İş Türü"><b>${fault.jobType || '-'}</b></td>
+                            <td data-label="Açıklama" style="max-width: 200px; overflow:hidden; text-overflow:ellipsis;">${fault.description || '-'}</td>
+                            <td data-label="Fotoğraf">${photoLink}</td>
+                            <td data-label="Görevli">${assigneeHtml}</td>
+                            <td data-label="Durum"><span class="status-badge status-acik">Açık</span></td>
                             ${adminCol}
                         </tr>
                     `;
@@ -162,17 +162,17 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                     const resolvedDateStr = fault.resolvedAt ? new Date(fault.resolvedAt.toDate()).toLocaleString('tr-TR') : 'Şimdi';
                     html += `
                         <tr style="background: ${rowBg}; color: white;">
-                            <td>${dateStr}</td>
-                            <td>${resolvedDateStr}</td>
-                            <td>${fault.userName || '-'}</td>
-                            <td>${fault.costCenter || '-'}</td>
-                            <td>${fault.machine || '-'}</td>
-                            <td>${fault.shift || '-'}</td>
-                            <td><b>${fault.jobType || '-'}</b></td>
-                            <td style="max-width: 200px; overflow:hidden; text-overflow:ellipsis;">${fault.description || '-'}</td>
-                            <td>${photoLink}</td>
-                            <td>${assigneeHtml}</td>
-                            <td><span class="status-badge status-cozuldu">Çözüldü</span></td>
+                            <td data-label="Bildirim">${dateStr}</td>
+                            <td data-label="Çözülme">${resolvedDateStr}</td>
+                            <td data-label="Bildiren">${fault.userName || '-'}</td>
+                            <td data-label="Bölüm">${fault.costCenter || '-'}</td>
+                            <td data-label="Makine">${fault.machine || '-'}</td>
+                            <td data-label="Vardiya">${fault.shift || '-'}</td>
+                            <td data-label="İş Türü"><b>${fault.jobType || '-'}</b></td>
+                            <td data-label="Açıklama" style="max-width: 200px; overflow:hidden; text-overflow:ellipsis;">${fault.description || '-'}</td>
+                            <td data-label="Fotoğraf">${photoLink}</td>
+                            <td data-label="Görevli">${assigneeHtml}</td>
+                            <td data-label="Durum"><span class="status-badge status-cozuldu">Çözüldü</span></td>
                             ${adminCol}
                         </tr>
                     `;

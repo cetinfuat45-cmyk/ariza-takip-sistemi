@@ -107,15 +107,39 @@ th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; 
 .close-modal:hover { color: var(--danger); transform: none; box-shadow: none;}
 
 @media (max-width: 768px) {
-    body { padding: 0.5rem; }
-    .glass-panel { padding: 1.25rem; border-radius: 16px; }
-    .dashboard-header { flex-direction: column; text-align: center; gap: 1rem; }
+    body { padding: 0; }
+    .glass-panel { padding: 1.5rem 1rem; border-radius: 0; border: none; min-height: 100vh; }
+    .dashboard-header { flex-direction: column; text-align: center; gap: 1rem; margin-bottom: 1rem; }
     .header-actions { flex-direction: column; width: 100%; }
     #adminPanel, #publicPanel { flex-wrap: wrap; justify-content: center; width: 100%; }
-    .stat-cards { grid-template-columns: 1fr; }
+    .stat-cards { grid-template-columns: 1fr; margin-bottom: 1rem; }
     h1 { font-size: 1.4rem; }
     .form-row { flex-direction: column; gap: 0; }
-    button { padding: 0.8rem; font-size: 0.95rem; }
-    .table-container { padding-bottom: 1rem; }
-    .admin-grid { grid-template-columns: 1fr; }
+    button { padding: 1rem; font-size: 1rem; border-radius: 12px; }
+    
+    /* Mobil Tabloyu Kartlara Çevirme Sihri */
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; } /* Başlıkları Gizle */
+    
+    tr { margin-bottom: 1rem; border-radius: 12px; padding: 0.5rem 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08) !important; position: relative; }
+    
+    td { border: none; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; padding: 0.75rem 0 !important; padding-left: 35% !important; text-align: right !important; display: flex; justify-content: flex-end; align-items: center; min-height: 44px; }
+    td:last-child { border-bottom: 0; }
+    
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 30%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+    }
+    
+    /* Gruplandırma Satırı (İş Türü Başlığı) İstisnası */
+    tr td[colspan] { padding-left: 0 !important; text-align: center !important; justify-content: center; border: none !important; font-size: 1.1rem !important; }
+    tr td[colspan]::before { content: none !important; }
 }
