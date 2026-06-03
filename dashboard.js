@@ -91,33 +91,34 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
     const renderTerminal = (faultList, isResolved) => {
         if (faultList.length === 0) return '<div class="term-line" style="color:#888;">[SİSTEM] Kayıt bulunamadı...</div>';
         
-        const grouped = {
-            'BUGÜN EKLENEN KAYITLAR': [],
-            'ESKİ KAYITLAR': []
-        };
-        
+        const grouped = {};
         const today = new Date();
+        const todayStr = `${String(today.getDate()).padStart(2,'0')}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getFullYear()).slice(-2)}`;
         
         faultList.forEach(fault => {
-            let isToday = false;
-            if (fault.createdAt) {
-                const fDate = fault.createdAt.toDate();
-                if (fDate.getDate() === today.getDate() && 
-                    fDate.getMonth() === today.getMonth() && 
-                    fDate.getFullYear() === today.getFullYear()) {
-                    isToday = true;
-                }
-            } else {
-                isToday = true;
-            }
+            const dateObj = fault.createdAt ? fault.createdAt.toDate() : new Date();
+            const faultDateStr = `${String(dateObj.getDate()).padStart(2,'0')}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${String(dateObj.getFullYear()).slice(-2)}`;
             
-            if (isToday) grouped['BUGÜN EKLENEN KAYITLAR'].push(fault);
-            else grouped['ESKİ KAYITLAR'].push(fault);
+            let groupName = faultDateStr === todayStr 
+                ? `${faultDateStr} BUGÜN GELEN` 
+                : `${faultDateStr} ESKİ KAYIT`;
+                
+            if (!grouped[groupName]) {
+                grouped[groupName] = [];
+            }
+            grouped[groupName].push(fault);
         });
 
         let html = '';
 
-        Object.keys(grouped).forEach(groupName => {
+        // Grupları ters kronolojik (yeniden eskiye) sıralayalım
+        const sortedGroups = Object.keys(grouped).sort((a, b) => {
+            if (a.includes('BUGÜN')) return -1;
+            if (b.includes('BUGÜN')) return 1;
+            return b.localeCompare(a); // "02.06.26" vs "01.06.26" => B önce gelsin
+        });
+
+        sortedGroups.forEach(groupName => {
             if (grouped[groupName].length === 0) return; 
 
             // Terminal Grup Başlığı
@@ -126,24 +127,21 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
             
             html += `
                 <div style="margin-top: 1.2rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.08); border-left: 5px solid ${headerColor}; color: white; font-weight: bold; letter-spacing: 1px;">
-                    > ${icon} [ ${groupName} ] (${grouped[groupName].length} Kayıt)
+                    > ${icon} ${groupName} (${grouped[groupName].length} Kayıt)
                 </div>
             `;
 
             grouped[groupName].forEach(fault => {
                 const dateObj = fault.createdAt ? fault.createdAt.toDate() : new Date();
                 
-                // Kısa Tarih ve Saat formatı: 03.06 08:30:14
-                const day = String(dateObj.getDate()).padStart(2, '0');
-                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const shortDate = `${day}.${month}`;
+                // Satırlarda ARTIK SADECE SAAT var, Tarih Yok.
                 const timeStr = dateObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); 
-                const dateTimeStr = `${shortDate} ${timeStr}`;
                 
                 // Renkler
                 let textColor = '#ffffff';
                 const jType = fault.jobType ? fault.jobType.toUpperCase() : '';
-                if (jType.includes('İSG') || jType.includes('GÜVENLİ')) { textColor = '#FF0000'; } 
+                if (jType.includes('TEKRAR')) { textColor = '#FF00FF'; } // Tekrar Eden Arıza
+                else if (jType.includes('İSG') || jType.includes('GÜVENLİ')) { textColor = '#FF0000'; } 
                 else if (jType.includes('MEKANİK')) { textColor = '#00FFFF'; } 
                 else if (jType.includes('ELEKTRİK')) { textColor = '#FFFF00'; } 
                 else if (jType.includes('PLANLI')) { textColor = '#FFA500'; }
@@ -172,7 +170,7 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                 // Satırları Tek Satır (Single Line) Terminal formatında oluştur
                 html += `
                     <div class="term-line" style="margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
-                        <span class="term-time">[${dateTimeStr}]</span>
+                        <span class="term-time">[${timeStr}]</span>
                         <span class="term-content">
                             <span style="color: ${textColor}; font-weight:bold;">${statusIcon} ${jType || 'BİLİNMİYOR'} </span>
                             <span style="color: ${textColor}; font-weight:normal; font-size:0.9em;">@ ${fault.machine || ''}</span>
