@@ -62,6 +62,7 @@ input, select, textarea {
 }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
 select option { background-color: var(--bg-color); color: white; font-size: 0.85rem; }
+input::placeholder, textarea::placeholder { color: #94a3b8; }
 
 button {
     width: 100%; background: var(--accent); color: white; border: none; border-radius: 10px; padding: 1rem; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; margin-top: 1rem;
@@ -348,6 +349,48 @@ th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; 
 .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: var(--text-secondary); transition: .3s; border-radius: 50%; }
 input:checked + .slider { background-color: var(--success); border-color: var(--success); }
 input:checked + .slider:before { transform: translateX(24px); background-color: white; }
+
+/* SADECE IŞ ISTEK FORMUNU BEYAZ YAPMAK IÇIN (LIGHT-PANEL) */
+.light-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0,0,0,0.1);
+}
+.light-panel h1 {
+    background: linear-gradient(to right, #0f172a, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.light-panel .header p, .light-panel label, .light-panel .step-title h3 {
+    color: #0f172a;
+}
+.light-panel input, .light-panel select, .light-panel textarea {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #0f172a;
+}
+.light-panel input:focus, .light-panel select:focus, .light-panel textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+.light-panel select option {
+    background-color: #ffffff;
+    color: #0f172a;
+}
+.light-panel .step-container {
+    background: rgba(0,0,0,0.02);
+    border-color: rgba(0,0,0,0.1);
+}
+.light-panel .step-container.active {
+    background: #ffffff;
+    border-color: var(--accent);
+}
+.light-panel .step-number {
+    background: rgba(0,0,0,0.08);
+}
+.light-panel .step-summary {
+    color: #475569;
+}
+
 
 @media (max-width: 768px) {
     body { padding: 0; }

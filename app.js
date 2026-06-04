@@ -232,6 +232,32 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sayfa yüklendiğinde mevcut doluları da kontrol et (Örn: tarayıcı otomatik doldurduysa)
         checkFilled(el);
     });
+
+    // Açılır Listeler (Select) için Otomatik İlerleme (Auto-Advance)
+    document.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', (e) => {
+            if (!e.target.value) return; // Eğer 'Seçiniz' boş kalırsa işlem yapma
+            
+            const stepContainer = e.target.closest('.step-container');
+            if (!stepContainer) return;
+            
+            const stepNum = parseInt(stepContainer.id.replace('step', ''));
+            const stepInputs = Array.from(stepContainer.querySelectorAll('input:not([type="hidden"]), select, textarea'));
+            const currentIndex = stepInputs.indexOf(e.target);
+            
+            if (currentIndex >= 0 && currentIndex < stepInputs.length - 1) {
+                // Aynı adımda sıradaki giriş alanına geç (Örn: Bölüm seçilince Makine'ye odaklan)
+                setTimeout(() => {
+                    stepInputs[currentIndex + 1].focus();
+                }, 100);
+            } else {
+                // Bu adımdaki son liste seçildi, doğrudan bir sonraki adıma (merdivene) atla
+                setTimeout(() => {
+                    window.nextStep(stepNum);
+                }, 250);
+            }
+        });
+    });
 });
 // --- Çok Adımlı Form (Stepper) Mantığı ---
 
