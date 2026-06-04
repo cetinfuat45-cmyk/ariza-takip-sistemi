@@ -37,11 +37,37 @@
             </div>
 
             <div class="admin-grid">
-                <!-- Toplu Veri Çekme -->
+                <!-- Google Sheets Entegrasyonu -->
                 <div class="admin-card" style="grid-column: 1 / -1; border: 2px dashed var(--accent);">
-                    <h3>🔗 Google Sheets (Excel) Otomatik Güncelleme</h3>
-                    <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 1rem;">Maliyet Merkezleri ve Makineler listenizi doğrudan Google Sheets tablonuzdan tek tuşla güncelleyin.</p>
-                    <button onclick="fetchGoogleSheet()" id="syncBtn" style="width:100%; background: var(--accent); font-size: 1.1rem; padding: 1rem;">📥 Tablodan Makine ve Bölümleri Çek</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                        <h3 style="margin:0;">🔗 Google Sheets (Excel) Entegrasyonu</h3>
+                    </div>
+                    
+                    <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 1rem;">Maliyet Merkezleri ve Makineler listenizi doğrudan Google Sheets tablonuzdan çekebilirsiniz.</p>
+                    <button onclick="fetchGoogleSheet()" id="syncBtn" style="width:100%; background: var(--accent); font-size: 1.1rem; padding: 1rem; margin-bottom: 2rem;">📥 Tablodan Makine ve Bölümleri Çek</button>
+                    
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                        <strong style="color: white; font-size: 1rem;">🕒 Günlük Otomatik Aktarım Saati</strong>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem; margin-top: 0.5rem;">Gün içinde gelen ve biten tüm arızalar, belirlediğiniz bu saatte otomatik olarak E-Tablolara aktarılacaktır.</p>
+                        
+                        <div class="add-row" style="margin-bottom: 1.5rem;">
+                            <input type="time" id="input-syncTime" style="font-size: 1.1rem; padding: 0.5rem; width: 120px;">
+                            <button onclick="saveSyncTime()" style="background:#10b981;">Saati Kaydet</button>
+                        </div>
+
+                        <strong style="color: white; font-size: 1rem;">🔗 Google Sheets Script Linki</strong>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem; margin-top: 0.5rem;">Verileri tabloya yazacak olan (yeni oluşturduğunuz) Google Apps Script linkini buraya girin.</p>
+                        <div class="add-row" style="margin-bottom: 1.5rem;">
+                            <input type="text" id="input-exportUrl" placeholder="https://script.google.com/macros/s/.../exec">
+                            <button onclick="saveExportUrl()" style="background:#10b981;">Linki Kaydet</button>
+                            <button onclick="testExportUrl()" id="testExportBtn" style="background:#3b82f6; display:none;">Test Et</button>
+                        </div>
+                        
+                        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+                            <button onclick="exportTodayFaults()" id="exportBtn" style="width: 100%; background: #3b82f6; font-size: 1rem; padding: 1rem;">🚀 Bugünün Arızalarını Şimdi Aktar</button>
+                            <p style="color: #94a3b8; font-size: 0.8rem; text-align: center; margin-top: 0.5rem;" id="lastExportStatus">Henüz aktarım yapılmadı.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Bölümler -->
@@ -100,9 +126,14 @@
                         <h3 style="margin:0;">📧 E-Posta Ayarları ve Bildirim Şalterleri</h3>
                     </div>
                     
-                    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1rem;">Web3Forms Access Key (Şifre) VEYA <b>Google Apps Script (Web App) Linkinizi</b> buraya girin:</p>
+                    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Web3Forms Access Key (Şifre) VEYA <b>Google Apps Script (Web App) Linkinizi</b> girin:</p>
+                    <div class="add-row" style="margin-bottom: 1rem;">
+                        <input type="text" id="input-adminEmail" placeholder="Örn: https://script.google.com/macros/s/..." style="width: 100%;">
+                    </div>
+                    
+                    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">📬 Maillerin Gideceği Alıcı E-Posta Adresi (Birden fazlaysa virgülle ayırın):</p>
                     <div class="add-row" style="margin-bottom: 1.5rem;">
-                        <input type="text" id="input-adminEmail" placeholder="Örn: 1a2b3c4d-5e6f...">
+                        <input type="text" id="input-targetEmail" placeholder="Örn: mudur@firma.com, patron@firma.com">
                         <button onclick="saveAdminEmail()" style="background:#10b981;">Kaydet</button>
                         <button onclick="testEmail()" id="testBtn" style="background:#3b82f6; display:none;">Test Et</button>
                     </div>

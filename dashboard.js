@@ -58,6 +58,113 @@ window.adminLogout = () => {
     window.location.reload();
 };
 
+// --- Otomatik Google Sheets Aktarımı ---
+let autoExportSettings = { time: null, url: null, lastSync: null };
+db.collection('ayarlar').doc('syncSettings').onSnapshot(doc => {
+    if (doc.exists) {
+        autoExportSettings.time = doc.data().exportTime;
+        autoExportSettings.url = doc.data().exportUrl;
+        autoExportSettings.lastSync = doc.data().lastSyncDate;
+    }
+});
+
+setInterval(async () => {
+    if (!autoExportSettings.time || !autoExportSettings.url) return;
+    
+    const now = new Date();
+    // Saati ve dakikayı her tarayıcıda aynı olacak şekilde (Örn: "09:05") manuel oluştur
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const currentHourMin = `${h}:${m}`;
+    const todayStr = now.toLocaleDateString('tr-TR');
+
+    // Saat geldi mi ve bugün henüz aktarım yapılmadı mı?
+    if (currentHourMin === autoExportSettings.time) {
+        if (!autoExportSettings.lastSync || !autoExportSettings.lastSync.includes(todayStr)) {
+            console.log("🕒 Otomatik Aktarım Saati Geldi! Veriler gönderiliyor...");
+            
+            // Çifte gönderimi engellemek için hemen tarihi güncelle
+            const nowStr = now.toLocaleString('tr-TR');
+            autoExportSettings.lastSync = nowStr; 
+            db.collection('ayarlar').doc('syncSettings').set({ lastSyncDate: nowStr }, { merge: true });
+
+            try {
+                const startOfDay = new Date();
+                startOfDay.setHours(0, 0, 0, 0);
+                
+                function checkIsToday(dateString) {
+                    if (!dateString || typeof dateString !== 'string') return false;
+                    try {
+                        const nums = dateString.match(/\d+/g);
+                        if (nums && nums.length >= 3) {
+                            const d = parseInt(nums[0], 10);
+                            const m = parseInt(nums[1], 10) - 1;
+                            let y = parseInt(nums[2], 10);
+                            if (y < 100) y += 2000;
+                            
+                            const dateObj = new Date(y, m, d);
+                            return dateObj >= startOfDay;
+                        }
+                    } catch(e) {}
+                    return false;
+                }
+
+                const snapshot = await db.collection("arizalar").get();
+                let faultsToExport = [];
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    let isToday = false;
+                    let createdStr = "";
+                    let completedStr = "";
+
+                    if (data.createdAt) {
+                        if (typeof data.createdAt.toDate === 'function') {
+                            const dateObj = data.createdAt.toDate();
+                            createdStr = dateObj.toLocaleString('tr-TR');
+                            if (dateObj >= startOfDay) isToday = true;
+                        } else if (typeof data.createdAt === 'string') {
+                            createdStr = data.createdAt;
+                            if (checkIsToday(createdStr)) isToday = true;
+                        }
+                    }
+
+                    if (data.completedAt) {
+                        if (typeof data.completedAt.toDate === 'function') {
+                            const dateObj = data.completedAt.toDate();
+                            completedStr = dateObj.toLocaleString('tr-TR');
+                            if (dateObj >= startOfDay) isToday = true;
+                        } else if (typeof data.completedAt === 'string') {
+                            completedStr = data.completedAt;
+                            if (checkIsToday(completedStr)) isToday = true;
+                        }
+                    }
+
+                    if (isToday) {
+                        const exportData = { ...data };
+                        if (createdStr) exportData.createdAt = createdStr;
+                        if (completedStr) exportData.completedAt = completedStr;
+                        faultsToExport.push(exportData);
+                    }
+                });
+
+                if (faultsToExport.length > 0) {
+                    fetch(autoExportSettings.url, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(faultsToExport)
+                    }).catch(e => console.log(e));
+                    console.log(`✅ ${faultsToExport.length} arıza Google Sheets'e otomatik aktarıldı.`);
+                }
+            } catch (err) {
+                console.error("Otomatik aktarımda hata:", err);
+            }
+        }
+    }
+}, 20000); // Tarayıcı uyku moduna karşı süreyi 20 saniyeye indirdik
+// --- Otomatik Aktarım Sonu ---
+
 window.deleteFault = async (id) => {
     if (confirm("Bu arıza kaydını KALICI OLARAK silmek istediğinize emin misiniz?")) {
         try { await db.collection("arizalar").doc(id).delete(); } 

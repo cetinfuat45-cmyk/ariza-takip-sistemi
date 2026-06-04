@@ -170,41 +170,50 @@ form.addEventListener('submit', async (e) => {
 
         await db.collection("arizalar").add(faultData);
 
-        // Yeni Arıza Bildirimini Web3Forms ile Mail At
+        // Yeni Arıza Bildirimini Web3Forms veya Webhook (Google Apps Script) ile Mail At
         try {
             const mailDoc = await db.collection('ayarlar').doc('adminEmail').get();
             if (mailDoc.exists && mailDoc.data().key && mailDoc.data().faultMailEnabled !== false) {
                 const accessKey = mailDoc.data().key;
-                
                 const dashboardLink = window.location.href.replace('index.html', '') + 'dashboard.html';
                 const faultTypeStr = faultData.jobType ? faultData.jobType.toUpperCase() : "ARIZA BİLDİRİMİ";
-
-                const response = await fetch('https://api.web3forms.com/submit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({
-                        access_key: accessKey,
-                        subject: faultData.machine || "Yeni Arıza", // Konu başlığı Makine Adı
-                        from_name: faultTypeStr, // Gönderen kişi MEKANİK ARIZA vs.
-                        message: faultData.description, // Önizleme metninde görünmesi için özel 'message' anahtarı
-                        "Bildiren Personel": faultData.userName,
-                        "Çalışılan Vardiya": faultData.shift,
-                        "Sisteme Giriş Linki": dashboardLink
-                    })
-                });
+                const targetEmail = mailDoc.data().targetEmail || "";
                 
-                const result = await response.json();
-                if(!result.success) {
-                    console.log("API Hatası (Mail Gitmedi): " + result.message);
+                if (accessKey.startsWith("http")) {
+                    // Google Apps Script (Kendi Mail Sunucusu)
+                    fetch(accessKey, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            type: 'fault',
+                            targetEmail: targetEmail,
+                            subject: faultData.machine || "Yeni Arıza",
+                            from_name: faultTypeStr,
+                            description: faultData.description,
+                            userName: faultData.userName,
+                            shift: faultData.shift,
+                            link: dashboardLink
+                        })
+                    }).catch(e=>console.log(e));
                 } else {
-                    console.log("✅ Mail Web3Forms'a başarıyla iletildi.");
+                    // Web3Forms kullanımı
+                    fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify({
+                            access_key: accessKey,
+                            subject: faultData.machine || "Yeni Arıza",
+                            from_name: faultTypeStr,
+                            message: faultData.description,
+                            "Bildiren Personel": faultData.userName,
+                            "Çalışılan Vardiya": faultData.shift,
+                            "Sisteme Giriş Linki": dashboardLink
+                        })
+                    }).catch(e=>console.log(e));
                 }
-            } else {
-                console.log("Admin panelindeki Mail Şalteri KAPALI veya Access Key kaydedilmemiş. Bu yüzden mail atılmadı.");
             }
-        } catch(e) {
-            console.log("Arıza maili gönderilemedi: ", e);
-        }
+        } catch(e) { console.log(e); }
 
         // Gönderim Başarılı -> Modal'ın 2. Aşamasını Aç
         loadingState.classList.add('hidden');
@@ -449,17 +458,34 @@ window.submitAdminModalLogin = () => {
         // Admin Giriş Yaptığında Mail Gönderimi (Bekletmeden arka planda)
         db.collection('ayarlar').doc('adminEmail').get().then(mailDoc => {
             if (mailDoc.exists && mailDoc.data().key && mailDoc.data().loginMailEnabled !== false) {
-                fetch('https://api.web3forms.com/submit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({
-                        access_key: mailDoc.data().key,
-                        subject: "⚠️ SİSTEM GÜVENLİĞİ: Ana Sayfadan Admin Paneline Giriş Yapıldı",
-                        from_name: "Bakım Sistemi",
-                        email: "sistem@bildirim.com",
-                        message: `Sisteminize (Ana Sayfa üzerinden) şifre ile başarılı bir Admin girişi yapılmıştır.\nTarih: ${new Date().toLocaleString('tr-TR')}`
-                    })
-                });
+                const accessKey = mailDoc.data().key;
+                const targetEmail = mailDoc.data().targetEmail || "";
+                
+                if(accessKey.startsWith("http")) {
+                    fetch(accessKey, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            type: 'login',
+                            targetEmail: targetEmail,
+                            subject: "⚠️ Admin Girişi",
+                            description: `Sisteminize an itibariyle şifre ile başarılı bir Admin girişi yapılmıştır.\nTarih: ${new Date().toLocaleString('tr-TR')}`
+                        })
+                    }).catch(e=>console.log(e));
+                } else {
+                    fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify({
+                            access_key: accessKey,
+                            subject: "⚠️ SİSTEM GÜVENLİĞİ: Ana Sayfadan Admin Paneline Giriş Yapıldı",
+                            from_name: "Bakım Sistemi",
+                            email: "sistem@bildirim.com",
+                            message: `Sisteminize (Ana Sayfa üzerinden) şifre ile başarılı bir Admin girişi yapılmıştır.\nTarih: ${new Date().toLocaleString('tr-TR')}`
+                        })
+                    }).catch(e=>console.log(e));
+                }
             }
         }).catch(e => console.log("Mail gönderilemedi."));
 
