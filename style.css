@@ -140,7 +140,31 @@ th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; 
 
 @media (max-width: 768px) {
     body { padding: 0; }
-    .glass-panel { padding: 1.5rem 1rem; border-radius: 0; border: none; min-height: 100vh; }
+    .glass-panel { padding: 1rem 0.5rem; border-radius: 0; border: none; min-height: 100vh; }
+    .form-row { grid-template-columns: 1fr; gap: 1rem; }
+    .header-actions { flex-direction: column; width: 100%; gap: 0.5rem !important; }
+    #publicPanel, #adminPanel { width: 100%; justify-content: center; }
+    .term-line { flex-direction: column; align-items: flex-start; }
+    .term-time { margin-bottom: 0.3rem; }
+    .modal-content { width: 95%; margin: 5% auto; padding: 1rem; }
+    
+    /* Android/Mobil Özel Çok Adımlı Form Optimizasyonu */
+    .step-header { padding: 0.8rem 0.8rem; gap: 0.6rem; }
+    .step-container.completed .step-header { padding: 0.5rem 0.8rem; }
+    .step-content { padding: 0 0.8rem; }
+    .step-container.active .step-content { padding: 0.5rem 0.8rem 1.2rem 0.8rem; }
+    
+    .step-number { width: 32px; height: 32px; font-size: 0.95rem; }
+    .step-title h3 { font-size: 0.95rem; }
+    .step-summary { max-width: 200px; font-size: 0.65rem; }
+    
+    /* İleri butonu mobilde tam ekran genişliğinde olsun */
+    .btn-next { width: 100%; float: none; text-align: center; padding: 1rem; font-size: 1rem; font-weight: bold; }
+    
+    /* Modal Butonları mobilde alt alta dizebilir */
+    #faultModalActions { flex-direction: column; }
+    #faultModalActions button { width: 100% !important; margin-top: 0.5rem; }
+    
     .dashboard-header { flex-direction: column; text-align: center; gap: 1rem; margin-bottom: 1rem; }
     .header-actions { flex-direction: column; width: 100%; }
     #adminPanel, #publicPanel { flex-wrap: wrap; justify-content: center; width: 100%; }
