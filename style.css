@@ -217,19 +217,16 @@ th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; 
 
 .step-number {
     width: 28px; height: 28px; border-radius: 50%;
+    width: 28px; height: 28px; border-radius: 4px;
     background: rgba(0,0,0,0.1); color: #111827;
     display: flex; align-items: center; justify-content: center;
     font-weight: bold; font-size: 0.9rem; flex-shrink: 0; transition: all 0.3s;
 }
 
-@keyframes neonGlowGreen {
-    0% { background: #00FF00; box-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00; color: #000; }
-    100% { background: rgba(0, 255, 0, 0.3); box-shadow: 0 0 2px #00FF00; color: #111827; }
-}
-
 .step-container.active .step-number { background: #111827; color: var(--accent); }
-.step-container.completed .step-number { 
-    animation: neonGlowGreen 1s infinite alternate ease-in-out; 
+.step-container.completed .step-number {
+    background: #FF0000; color: #fff;
+    border: none;
 }
 
 .step-title { display: flex; flex-direction: column; justify-content: center; }
@@ -421,9 +418,9 @@ body.dark-theme .modal-content {
 }
 
 /* Gönder Butonu Hazır Animasyonları */
-@keyframes neonGlowRedPulse {
-    0% { box-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000; border-color: #FF0000; }
-    100% { box-shadow: 0 0 20px #FF0000, 0 0 35px #FF0000; border-color: #FF0000; background-color: rgba(255, 0, 0, 0.1); }
+@keyframes blinkGreen {
+    0% { background-color: #10b981; border-color: #10b981; transform: scale(1); }
+    100% { background-color: #059669; border-color: #059669; transform: scale(1.05); }
 }
 @keyframes heartbeat {
     0% { transform: scale(1); }
@@ -434,9 +431,9 @@ body.dark-theme .modal-content {
 }
 
 .nav-center-btn.ready-to-submit {
-    animation: neonGlowRedPulse 1.2s infinite alternate ease-in-out;
+    animation: blinkGreen 0.8s infinite alternate ease-in-out;
+    color: white;
 }
 .nav-center-btn.ready-to-submit svg {
-    animation: heartbeat 1.5s infinite ease-in-out;
-    color: #FF0000;
+    color: white;
 }

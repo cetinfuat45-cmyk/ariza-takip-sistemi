@@ -18,7 +18,6 @@ const db = firebase.firestore();
 const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 if (isAdmin) {
     document.getElementById('adminPanel').style.display = 'flex';
-    document.getElementById('loginBtn').style.display = 'none';
     document.querySelectorAll('.admin-col').forEach(el => el.style.display = 'table-cell');
 }
 

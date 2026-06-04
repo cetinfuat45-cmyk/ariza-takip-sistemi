@@ -5,6 +5,9 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// Ana sayfaya dönüldüğünde admin yetkisini otomatik olarak sıfırla (Çıkış Yap)
+sessionStorage.removeItem('isAdmin');
+
 // Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAEqLYUevIJCcLrJa-05MXx5ik-QFouq9o",
@@ -438,16 +441,15 @@ window.closeAdminLogin = () => {
     if (modal) modal.classList.add('hidden');
 };
 
-window.submitAdminModalLogin = async () => {
+window.submitAdminModalLogin = () => {
     const passInput = document.getElementById('adminPasswordInput');
     if (passInput.value === "12345") { 
         sessionStorage.setItem("isAdmin", "true");
         
-        // Admin Giriş Yaptığında Mail Gönderimi
-        try {
-            const mailDoc = await db.collection('ayarlar').doc('adminEmail').get();
+        // Admin Giriş Yaptığında Mail Gönderimi (Bekletmeden arka planda)
+        db.collection('ayarlar').doc('adminEmail').get().then(mailDoc => {
             if (mailDoc.exists && mailDoc.data().key && mailDoc.data().enabled !== false) {
-                await fetch('https://api.web3forms.com/submit', {
+                fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({
@@ -459,7 +461,7 @@ window.submitAdminModalLogin = async () => {
                     })
                 });
             }
-        } catch(e) { console.log("Mail gönderilemedi."); }
+        }).catch(e => console.log("Mail gönderilemedi."));
 
         window.location.href = "admin.html";
     } else {
