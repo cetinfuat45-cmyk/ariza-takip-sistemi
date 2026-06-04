@@ -411,27 +411,31 @@ window.resetStepper = () => {
     const openPhotoModalBtn = document.getElementById('openPhotoModalBtn');
     if (openPhotoModalBtn) {
         document.getElementById('photoCompactText').innerText = "Fotoğraf Ekle (Opsiyonel)";
-        openPhotoModalBtn.style.background = "rgba(17, 24, 39, 0.05)";
-        openPhotoModalBtn.style.borderColor = "rgba(17,24,39,0.1)";
-        openPhotoModalBtn.style.color = "#111827";
+        openPhotoModalBtn.style.color = "var(--text-secondary)";
         
         const cameraInput = document.getElementById('cameraInput');
         const fileInput = document.getElementById('fileInput');
         if(cameraInput) cameraInput.value = "";
         if(fileInput) fileInput.value = "";
     }
-    
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) submitBtn.classList.remove('ready-to-submit');
+    const wrap = document.querySelector('.nav-center-wrap');
+    if (wrap) wrap.classList.remove('show-btn');
 };
 
-window.adminLogin = () => {
+window.adminLogin = async () => {
     const modal = document.getElementById('adminLoginModal');
     if (modal) {
         modal.classList.remove('hidden');
         document.getElementById('adminPasswordInput').value = '';
         setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100);
     }
+};
+
+window.closeAdminLogin = () => {
+    const modal = document.getElementById('adminLoginModal');
+    if (modal) modal.classList.add('hidden');
 };
 
 window.submitAdminModalLogin = async () => {
@@ -465,15 +469,19 @@ window.submitAdminModalLogin = async () => {
     }
 };
 
-// Gönder Butonu Neon Efekti Kontrolü
+// Gönder Butonu Görünürlük ve Neon Kontrolü
 const descriptionInput = document.getElementById('description');
 const submitNeonBtn = document.getElementById('submitBtn');
-if (descriptionInput && submitNeonBtn) {
+const navCenterWrap = document.querySelector('.nav-center-wrap');
+
+if (descriptionInput) {
     descriptionInput.addEventListener('input', function() {
         if (this.value.trim().length > 3) {
-            submitNeonBtn.classList.add('ready-to-submit');
+            if(submitNeonBtn) submitNeonBtn.classList.add('ready-to-submit');
+            if(navCenterWrap) navCenterWrap.classList.add('show-btn');
         } else {
-            submitNeonBtn.classList.remove('ready-to-submit');
+            if(submitNeonBtn) submitNeonBtn.classList.remove('ready-to-submit');
+            if(navCenterWrap) navCenterWrap.classList.remove('show-btn');
         }
     });
 }

@@ -264,11 +264,12 @@ th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; 
     transition: color 0.2s;
 }
 .nav-item.active { color: #111827; }
-.nav-center-wrap { position: relative; top: -20px; }
+.nav-center-wrap { position: relative; top: -20px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: scale(0); opacity: 0; pointer-events: none; }
+.nav-center-wrap.show-btn { transform: scale(1); opacity: 1; pointer-events: auto; }
 .nav-center-btn {
     width: 64px; height: 64px; margin: 0; padding: 0;
     background: #111827; color: var(--accent);
-    border-radius: 50%; display: flex; justify-content: center; align-items: center;
+    border-radius: 16px; display: flex; justify-content: center; align-items: center;
     border: 6px solid var(--bg-color); box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     cursor: pointer; transition: transform 0.2s;
 }
@@ -420,9 +421,9 @@ body.dark-theme .modal-content {
 }
 
 /* Gönder Butonu Hazır Animasyonları */
-@keyframes neonGlowGreenPulse {
-    0% { box-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00; border-color: #00FF00; }
-    100% { box-shadow: 0 0 20px #00FF00, 0 0 35px #00FF00; border-color: #00FF00; background-color: rgba(0, 255, 0, 0.1); }
+@keyframes neonGlowRedPulse {
+    0% { box-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000; border-color: #FF0000; }
+    100% { box-shadow: 0 0 20px #FF0000, 0 0 35px #FF0000; border-color: #FF0000; background-color: rgba(255, 0, 0, 0.1); }
 }
 @keyframes heartbeat {
     0% { transform: scale(1); }
@@ -433,9 +434,9 @@ body.dark-theme .modal-content {
 }
 
 .nav-center-btn.ready-to-submit {
-    animation: neonGlowGreenPulse 1.2s infinite alternate ease-in-out;
+    animation: neonGlowRedPulse 1.2s infinite alternate ease-in-out;
 }
 .nav-center-btn.ready-to-submit svg {
     animation: heartbeat 1.5s infinite ease-in-out;
-    color: #00FF00;
+    color: #FF0000;
 }
