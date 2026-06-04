@@ -114,31 +114,43 @@ async function compressImage(file, maxWidth = 1024) {
 
 const form = document.getElementById('faultForm');
 const submitBtn = document.getElementById('submitBtn');
-const successMessage = document.getElementById('successMessage');
+
+// Yeni Gönderim Modalı Elementleri
+const submissionModal = document.getElementById('submissionModal');
+const loadingState = document.getElementById('loadingState');
+const successState = document.getElementById('successState');
+const loadingSubText = document.getElementById('loadingSubText');
+const closeCountdown = document.getElementById('closeCountdown');
+let closeCountdownTimer = null;
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Butonu yükleniyor durumuna al
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="loading-spinner"></span> <span>Gönderiliyor...</span>';
+    // Yükleniyor ekranını aç
+    submissionModal.classList.remove('hidden');
+    loadingState.classList.remove('hidden');
+    successState.classList.add('hidden');
+    loadingSubText.innerText = "Sistemle bağlantı kuruluyor...";
 
     try {
         let photoUrl = "";
         
-        // Fotoğraf seçildiyse işle
-        const photoFile = document.getElementById('photo').files[0];
+        // Fotoğraf seçildiyse işle (Kamera veya Dosyadan)
+        const cameraFile = document.getElementById('cameraInput') ? document.getElementById('cameraInput').files[0] : null;
+        const folderFile = document.getElementById('fileInput') ? document.getElementById('fileInput').files[0] : null;
+        const photoFile = cameraFile || folderFile;
+        
         if (photoFile) {
-            submitBtn.innerHTML = '<span class="loading-spinner"></span> <span>Fotoğraf Sıkıştırılıyor...</span>';
+            loadingSubText.innerText = "Fotoğraf Sıkıştırılıyor...";
             const compressedBlob = await compressImage(photoFile);
             
-            submitBtn.innerHTML = '<span class="loading-spinner"></span> <span>Fotoğraf Yükleniyor...</span>';
+            loadingSubText.innerText = "Fotoğraf Yükleniyor...";
             const storageRef = storage.ref('ariza_fotolari/' + Date.now() + '.jpg');
             await storageRef.put(compressedBlob);
             photoUrl = await storageRef.getDownloadURL();
         }
 
-        submitBtn.innerHTML = '<span>Kayıt Oluşturuluyor...</span>';
+        loadingSubText.innerText = "Kayıt Oluşturuluyor...";
 
         const faultData = {
             userName: document.getElementById('userName').value,
@@ -180,39 +192,60 @@ form.addEventListener('submit', async (e) => {
                 
                 const result = await response.json();
                 if(!result.success) {
-                    alert("⚠️ API Hatası (Mail Gitmedi): " + result.message);
+                    console.log("API Hatası (Mail Gitmedi): " + result.message);
                 } else {
                     console.log("✅ Mail Web3Forms'a başarıyla iletildi.");
                 }
             } else {
-                alert("⚠️ Sistem Uyarısı: Admin panelindeki Mail Şalteri KAPALI veya Access Key kaydedilmemiş. Bu yüzden mail atılmadı.");
+                console.log("Admin panelindeki Mail Şalteri KAPALI veya Access Key kaydedilmemiş. Bu yüzden mail atılmadı.");
             }
         } catch(e) {
-            alert("⚠️ Mail gönderim aşamasında kritik hata: " + e.message);
             console.log("Arıza maili gönderilemedi: ", e);
         }
 
-        successMessage.classList.remove('hidden');
-        form.reset();
+        // Gönderim Başarılı -> Modal'ın 2. Aşamasını Aç
+        loadingState.classList.add('hidden');
+        successState.classList.remove('hidden');
         
-        // 3 saniye sonra mesajı gizle ve butonu düzelt
-        setTimeout(() => {
-            successMessage.classList.add('hidden');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `
-                <span>Talebi Gönder</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            `;
-            window.resetStepper(); // Formu 1. adıma döndür
-        }, 3000);
+        // Formu Arka Planda Sıfırla
+        form.reset();
+        window.resetStepper();
+        
+        // 10 Saniyelik Otomatik Kapatma Sayacı
+        let secondsLeft = 10;
+        closeCountdown.innerText = secondsLeft;
+        
+        clearInterval(closeCountdownTimer);
+        closeCountdownTimer = setInterval(() => {
+            secondsLeft--;
+            closeCountdown.innerText = secondsLeft;
+            if (secondsLeft <= 0) {
+                clearInterval(closeCountdownTimer);
+                window.closeSystem();
+            }
+        }, 1000);
 
     } catch (error) {
         console.error("Hata: ", error);
-        alert("Kayıt sırasında bir hata oluştu! Gerekli izinleri verdiğinizden emin olun.");
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Talebi Gönder';
+        // Hata durumunda sadece modalı kapat (veya konsola yaz)
+        submissionModal.classList.add('hidden');
     }
 });
+
+// Modal İçi Butonların Fonksiyonları
+window.startNewForm = () => {
+    clearInterval(closeCountdownTimer);
+    submissionModal.classList.add('hidden');
+    window.resetStepper();
+};
+
+window.closeSystem = () => {
+    clearInterval(closeCountdownTimer);
+    // Genellikle tarayıcılar JS ile açılmayan pencereleri window.close() ile kapatmaya izin vermez.
+    // Bu yüzden pencereyi kapatmayı dener, olmazsa ekranı tamamen siyaha çevirir veya "Kapatabilirsiniz" mesajı verir.
+    document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; width:100vw; background:#000; color:#fff; flex-direction:column; font-family:sans-serif;"><h2 style="margin-bottom:1rem;">Sistem Kapatıldı</h2><p style="color:#aaa;">Bu sekmeyi güvenle kapatabilirsiniz.</p></div>';
+    window.close(); 
+};
 
 // Doldurulan form alanlarının (input, select, textarea) yanıp sönmesi için dinleyici
 document.addEventListener('DOMContentLoaded', () => {
@@ -258,6 +291,42 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Fotoğraf Modalı ve Seçim İşlemleri
+    const openPhotoModalBtn = document.getElementById('openPhotoModalBtn');
+    const photoSelectionModal = document.getElementById('photoSelectionModal');
+    const cameraInput = document.getElementById('cameraInput');
+    const fileInput = document.getElementById('fileInput');
+    const photoCompactText = document.getElementById('photoCompactText');
+
+    if (openPhotoModalBtn && photoSelectionModal) {
+        openPhotoModalBtn.addEventListener('click', () => {
+            photoSelectionModal.classList.remove('hidden');
+        });
+
+        const handlePhotoSelection = (e, otherInput) => {
+            if (e.target.files && e.target.files.length > 0) {
+                // Diğer input'u temizle (çakışmayı önlemek için)
+                otherInput.value = "";
+                
+                const fileName = e.target.files[0].name;
+                photoCompactText.innerText = "✅ " + fileName;
+                openPhotoModalBtn.style.background = "rgba(16, 185, 129, 0.1)";
+                openPhotoModalBtn.style.borderColor = "var(--success)";
+                openPhotoModalBtn.style.color = "var(--success)";
+                
+                // Seçim yapıldıktan sonra modalı kapat
+                setTimeout(() => {
+                    photoSelectionModal.classList.add('hidden');
+                }, 300);
+            }
+        };
+
+        if (cameraInput && fileInput) {
+            cameraInput.addEventListener('change', (e) => handlePhotoSelection(e, fileInput));
+            fileInput.addEventListener('change', (e) => handlePhotoSelection(e, cameraInput));
+        }
+    }
 });
 // --- Çok Adımlı Form (Stepper) Mantığı ---
 
@@ -337,4 +406,18 @@ window.resetStepper = () => {
         el.classList.remove('completed');
     });
     document.getElementById('step1').classList.add('active');
+    
+    // Fotoğraf Butonunu ve Seçimlerini Sıfırla
+    const openPhotoModalBtn = document.getElementById('openPhotoModalBtn');
+    if (openPhotoModalBtn) {
+        document.getElementById('photoCompactText').innerText = "Fotoğraf Ekle (Opsiyonel)";
+        openPhotoModalBtn.style.background = "rgba(17, 24, 39, 0.05)";
+        openPhotoModalBtn.style.borderColor = "rgba(17,24,39,0.1)";
+        openPhotoModalBtn.style.color = "#111827";
+        
+        const cameraInput = document.getElementById('cameraInput');
+        const fileInput = document.getElementById('fileInput');
+        if(cameraInput) cameraInput.value = "";
+        if(fileInput) fileInput.value = "";
+    }
 };
