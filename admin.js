@@ -59,12 +59,24 @@ window.addItem = async (cat) => {
 };
 
 // Standart Liste Elemanı Silme
-window.removeItem = async (cat, item) => {
-    if (!confirm(`"${item}" silinecek. Emin misiniz?`)) return;
+let pendingDelete = null;
+
+window.removeItem = (cat, item) => {
+    pendingDelete = { cat, item };
+    document.getElementById('confirmModalText').innerText = `"${item}" kaydını silmek istediğinize emin misiniz?`;
+    document.getElementById('confirmModal').classList.remove('hidden');
+};
+
+document.getElementById('confirmBtnYes').addEventListener('click', async () => {
+    if (!pendingDelete) return;
+    const { cat, item } = pendingDelete;
+    document.getElementById('confirmModal').classList.add('hidden');
+    
     try {
         await settingsRef.doc(cat).update({ list: firebase.firestore.FieldValue.arrayRemove(item) });
     } catch (err) { alert("Silinirken hata oluştu."); }
-};
+    pendingDelete = null;
+});
 
 // Google Sheets Toplu Veri Çekme
 window.fetchGoogleSheet = async () => {
@@ -174,52 +186,48 @@ window.fetchGoogleSheet = async () => {
     }
 };
 
-// Admin Bildirim API İşlemleri
+// Mail Ayarlarını Çek
 settingsRef.doc('adminEmail').onSnapshot(doc => {
-    const el = document.getElementById('input-adminEmail');
-    const toggle = document.getElementById('toggle-mailEnabled');
     if (doc.exists) {
-        if(el) el.value = doc.data().key || '';
-        if(toggle) toggle.checked = doc.data().enabled !== false; // Varsayılan olarak açık (true)
+        document.getElementById('input-adminEmail').value = doc.data().key || "";
         
-        const btn = document.getElementById('testBtn');
-        if(doc.data().key && doc.data().key.length > 20 && toggle && toggle.checked) {
-            if(btn) btn.style.display = 'block';
-        } else {
-            if(btn) btn.style.display = 'none';
-        }
+        // Şalterleri güncelle (Eğer ayar yoksa varsayılan olarak açık kabul et)
+        document.getElementById('toggle-loginMailEnabled').checked = doc.data().loginMailEnabled !== false;
+        document.getElementById('toggle-faultMailEnabled').checked = doc.data().faultMailEnabled !== false;
+    } else {
+        document.getElementById('toggle-loginMailEnabled').checked = true;
+        document.getElementById('toggle-faultMailEnabled').checked = true;
     }
 });
 
-window.toggleMailSystem = async () => {
-    const isEnabled = document.getElementById('toggle-mailEnabled').checked;
-    try {
-        await settingsRef.doc('adminEmail').set({ enabled: isEnabled }, { merge: true });
-        if(isEnabled) {
-            alert("✅ Mail sistemi AÇILDI. Artık girişlerde bildirim alacaksınız.");
-        } else {
-            alert("❌ Mail sistemi KAPATILDI. Artık şifre girilse bile mail atılmayacak.");
-        }
-    } catch (err) { alert("Ayar kaydedilemedi."); }
-};
-
+// Access Key veya Google Apps Script Linki Kaydet
 window.saveAdminEmail = async () => {
     const key = document.getElementById('input-adminEmail').value.trim();
     
     if(key.includes('@')) {
-        alert("HATA: Buraya e-posta adresinizi DEĞİL, web3forms.com adresinden kopyaladığınız uzun şifreyi (Access Key) yazmalısınız.");
+        alert("HATA: Buraya e-posta adresinizi DEĞİL, şifreyi (Access Key) veya Google Apps Script (Web App) Linkini yazmalısınız.");
         return;
     }
-    if(!key || key.length < 25 || !key.includes('-')) {
-        alert("HATA: Girdiğiniz kod geçersiz. Lütfen web3forms'tan aldığınız tireli şifreyi eksiksiz kopyalayın.");
+    if(!key || (key.length < 25 && !key.startsWith('http'))) {
+        alert("HATA: Girdiğiniz kod geçersiz. Lütfen eksiksiz kopyalayın.");
         return;
     }
     
     try {
         await settingsRef.doc('adminEmail').set({ key: key }, { merge: true });
-        alert("✅ Şifre başarıyla kaydedildi! Yan tarafta çıkan MAVİ renkli 'Test Et' butonuna basarak sistemi deneyebilirsiniz.");
+        alert("✅ E-Posta Gönderim Bilgisi başarıyla kaydedildi! (Not: Google Apps Script kullanıyorsanız sağdaki 'Test Et' butonu sadece Web3Forms için çalışır, dikkate almayınız).");
         document.getElementById('testBtn').style.display = 'block';
     } catch (err) { alert("Kaydedilirken hata oluştu."); }
+};
+
+// Şalterleri (Aç/Kapat) Veritabanına Kaydet
+window.toggleMailSetting = async (settingName) => {
+    const isChecked = document.getElementById(`toggle-${settingName}`).checked;
+    try {
+        await settingsRef.doc('adminEmail').set({ [settingName]: isChecked }, { merge: true });
+    } catch(e) {
+        alert("Ayar değiştirilemedi.");
+    }
 };
 
 window.testEmail = async () => {

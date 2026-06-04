@@ -173,7 +173,7 @@ form.addEventListener('submit', async (e) => {
         // Yeni Arıza Bildirimini Web3Forms ile Mail At
         try {
             const mailDoc = await db.collection('ayarlar').doc('adminEmail').get();
-            if (mailDoc.exists && mailDoc.data().key && mailDoc.data().enabled !== false) {
+            if (mailDoc.exists && mailDoc.data().key && mailDoc.data().faultMailEnabled !== false) {
                 const accessKey = mailDoc.data().key;
                 
                 const dashboardLink = window.location.href.replace('index.html', '') + 'dashboard.html';
@@ -186,7 +186,7 @@ form.addEventListener('submit', async (e) => {
                         access_key: accessKey,
                         subject: faultData.machine || "Yeni Arıza", // Konu başlığı Makine Adı
                         from_name: faultTypeStr, // Gönderen kişi MEKANİK ARIZA vs.
-                        "Arıza Açıklaması": faultData.description,
+                        message: faultData.description, // Önizleme metninde görünmesi için özel 'message' anahtarı
                         "Bildiren Personel": faultData.userName,
                         "Çalışılan Vardiya": faultData.shift,
                         "Sisteme Giriş Linki": dashboardLink
@@ -448,7 +448,7 @@ window.submitAdminModalLogin = () => {
         
         // Admin Giriş Yaptığında Mail Gönderimi (Bekletmeden arka planda)
         db.collection('ayarlar').doc('adminEmail').get().then(mailDoc => {
-            if (mailDoc.exists && mailDoc.data().key && mailDoc.data().enabled !== false) {
+            if (mailDoc.exists && mailDoc.data().key && mailDoc.data().loginMailEnabled !== false) {
                 fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
