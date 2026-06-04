@@ -420,4 +420,60 @@ window.resetStepper = () => {
         if(cameraInput) cameraInput.value = "";
         if(fileInput) fileInput.value = "";
     }
+    
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) submitBtn.classList.remove('ready-to-submit');
 };
+
+window.adminLogin = () => {
+    const modal = document.getElementById('adminLoginModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.getElementById('adminPasswordInput').value = '';
+        setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100);
+    }
+};
+
+window.submitAdminModalLogin = async () => {
+    const passInput = document.getElementById('adminPasswordInput');
+    if (passInput.value === "12345") { 
+        sessionStorage.setItem("isAdmin", "true");
+        
+        // Admin Giriş Yaptığında Mail Gönderimi
+        try {
+            const mailDoc = await db.collection('ayarlar').doc('adminEmail').get();
+            if (mailDoc.exists && mailDoc.data().key && mailDoc.data().enabled !== false) {
+                await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        access_key: mailDoc.data().key,
+                        subject: "⚠️ SİSTEM GÜVENLİĞİ: Ana Sayfadan Admin Paneline Giriş Yapıldı",
+                        from_name: "Bakım Sistemi",
+                        email: "sistem@bildirim.com",
+                        message: `Sisteminize (Ana Sayfa üzerinden) şifre ile başarılı bir Admin girişi yapılmıştır.\nTarih: ${new Date().toLocaleString('tr-TR')}`
+                    })
+                });
+            }
+        } catch(e) { console.log("Mail gönderilemedi."); }
+
+        window.location.href = "admin.html";
+    } else {
+        alert("Hatalı şifre!");
+        passInput.value = "";
+        passInput.focus();
+    }
+};
+
+// Gönder Butonu Neon Efekti Kontrolü
+const descriptionInput = document.getElementById('description');
+const submitNeonBtn = document.getElementById('submitBtn');
+if (descriptionInput && submitNeonBtn) {
+    descriptionInput.addEventListener('input', function() {
+        if (this.value.trim().length > 3) {
+            submitNeonBtn.classList.add('ready-to-submit');
+        } else {
+            submitNeonBtn.classList.remove('ready-to-submit');
+        }
+    });
+}

@@ -19,19 +19,8 @@
         <h2 class="splash-text">Bakım Sistemine<br>Hoş Geldiniz</h2>
     </div>
 
-    <div style="position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; z-index: 10;">
-        <button onclick="window.location.href='dashboard.html'" style="padding: 0.5rem 1rem; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; cursor: pointer; font-weight: 500;">🔍 Arıza Takip Paneli</button>
-    </div>
-    <div class="container">
-        <div class="glass-panel">
-            <div class="header">
-                <div class="header-text">
-                    <h1>ARIZA BİLDİRİMİ</h1>
-                </div>
-                <div class="profile-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                </div>
-            </div>
+    <div class="container" style="padding-top: 0.5rem;">
+        <div class="glass-panel" style="padding-top: 1rem;">
             
             <form id="faultForm" class="stepper-form">
                 
@@ -150,9 +139,9 @@
             <span class="nav-center-label">GÖNDER</span>
         </div>
         
-        <a href="#" class="nav-item active">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            <span>Yeni</span>
+        <a href="#" onclick="adminLogin()" class="nav-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span>Admin</span>
         </a>
     </div>
 
@@ -213,6 +202,26 @@
                 </div>
             </div>
             
+        </div>
+    </div>
+
+    <!-- Admin Giriş Modalı -->
+    <div id="adminLoginModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 2rem; background: var(--bg-color);">
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="button" class="close-modal" onclick="document.getElementById('adminLoginModal').classList.add('hidden')" style="color: var(--text-primary); font-size: 1.5rem; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 1rem;">×</button>
+            </div>
+            
+            <div style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1); color: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            
+            <h3 style="color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 700;">Admin Girişi</h3>
+            <p style="color: var(--danger); font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem;">⚠️ Giriş yaptığınızda yöneticiye mesaj gönderilecektir.</p>
+            
+            <input type="password" id="adminPasswordInput" placeholder="Şifrenizi Girin" style="width: 100%; text-align: center; font-size: 1.2rem; letter-spacing: 0.2rem; margin-bottom: 1rem;">
+            
+            <button type="button" onclick="submitAdminModalLogin()" style="width: 100%; background: #111827; color: var(--accent); border-radius: 12px; padding: 1rem; border: none; font-weight: 700; cursor: pointer;">Giriş Yap</button>
         </div>
     </div>
 

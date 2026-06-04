@@ -222,13 +222,20 @@ th { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; 
     font-weight: bold; font-size: 0.9rem; flex-shrink: 0; transition: all 0.3s;
 }
 
+@keyframes neonGlowGreen {
+    0% { background: #00FF00; box-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00; color: #000; }
+    100% { background: rgba(0, 255, 0, 0.3); box-shadow: 0 0 2px #00FF00; color: #111827; }
+}
+
 .step-container.active .step-number { background: #111827; color: var(--accent); }
-.step-container.completed .step-number { background: #ffffff; color: #111827; }
+.step-container.completed .step-number { 
+    animation: neonGlowGreen 1s infinite alternate ease-in-out; 
+}
 
 .step-title { display: flex; flex-direction: column; justify-content: center; }
 .step-title h3 { margin: 0; font-size: 1.05rem; color: #111827; transition: all 0.3s; font-weight: 700; }
 .step-summary {
-    display: block; font-size: 0.75rem; color: rgba(0,0,0,0.6); margin-top: 0.2rem;
+    display: block; font-size: 0.65rem; color: rgba(0,0,0,0.4); margin-top: 0.2rem;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;
 }
 .step-container.active .step-summary { display: none; }
@@ -410,4 +417,25 @@ body.dark-theme .modal-content {
     body.dark-theme .glass-panel {
         padding: 1rem 0.5rem; border-radius: 0; min-height: 100vh;
     }
+}
+
+/* Gönder Butonu Hazır Animasyonları */
+@keyframes neonGlowGreenPulse {
+    0% { box-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00; border-color: #00FF00; }
+    100% { box-shadow: 0 0 20px #00FF00, 0 0 35px #00FF00; border-color: #00FF00; background-color: rgba(0, 255, 0, 0.1); }
+}
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    14% { transform: scale(1.2); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.2); }
+    70% { transform: scale(1); }
+}
+
+.nav-center-btn.ready-to-submit {
+    animation: neonGlowGreenPulse 1.2s infinite alternate ease-in-out;
+}
+.nav-center-btn.ready-to-submit svg {
+    animation: heartbeat 1.5s infinite ease-in-out;
+    color: #00FF00;
 }
