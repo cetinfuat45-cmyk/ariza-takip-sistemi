@@ -28,60 +28,107 @@
                 <h1>Arıza & İş İsteği Bildirimi</h1>
             </div>
             
-            <form id="faultForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="userName">Arızayı Bildiren (Ad Soyad)</label>
-                        <input type="text" id="userName" required placeholder="Örn: Ahmet Yılmaz">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="costCenter">1. Bölümler / Maliyet Merkezi</label>
-                        <select id="costCenter" required>
-                            <option value="">Seçiniz... (Önce Admin'den Ekleyin)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="machine">2. Makineler / Ekipmanlar</label>
-                        <select id="machine" required>
-                            <option value="">Seçiniz... (Önce Admin'den Ekleyin)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="shift">3. Vardiya</label>
-                        <select id="shift" required>
-                            <option value="">Seçiniz... (Önce Admin'den Ekleyin)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="jobType">4. İş Türü</label>
-                        <select id="jobType" required>
-                            <option value="">Seçiniz... (Önce Admin'den Ekleyin)</option>
-                        </select>
-                    </div>
-                </div>
+            <form id="faultForm" class="stepper-form">
                 
-                <div class="form-group">
-                    <label for="description">Arıza / İstek Açıklaması</label>
-                    <textarea id="description" rows="3" required placeholder="Sorunu detaylıca açıklayın..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="photo">Fotoğraf (Opsiyonel)</label>
-                    <input type="file" id="photo" accept="image/*" style="padding: 0.5rem; background: rgba(0,0,0,0.2);">
+                <!-- Adım 1: Kimlik -->
+                <div class="step-container active" id="step1">
+                    <div class="step-header" onclick="goToStep(1)">
+                        <div class="step-number">1</div>
+                        <div class="step-title">
+                            <h3>Kimlik Bilgisi</h3>
+                            <span class="step-summary" id="summary1"></span>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="form-group">
+                            <label for="userName">Arızayı Bildiren (Ad Soyad)</label>
+                            <input type="text" id="userName" required placeholder="Örn: Ahmet Yılmaz">
+                        </div>
+                        <button type="button" class="btn-next" onclick="nextStep(1)">İleri (Tamam) →</button>
+                    </div>
                 </div>
 
-                <button type="submit" id="submitBtn">
-                    <span>Bildirimi Gönder</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                </button>
+                <!-- Adım 2: Konum -->
+                <div class="step-container" id="step2">
+                    <div class="step-header" onclick="goToStep(2)">
+                        <div class="step-number">2</div>
+                        <div class="step-title">
+                            <h3>Arıza Konumu</h3>
+                            <span class="step-summary" id="summary2"></span>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="costCenter">1. Bölümler / Maliyet Merkezi</label>
+                                <select id="costCenter" required>
+                                    <option value="">Seçiniz...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="machine">2. Makineler / Ekipmanlar</label>
+                                <select id="machine" required>
+                                    <option value="">Seçiniz...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-next" onclick="nextStep(2)">İleri (Tamam) →</button>
+                    </div>
+                </div>
+
+                <!-- Adım 3: İş Detayı -->
+                <div class="step-container" id="step3">
+                    <div class="step-header" onclick="goToStep(3)">
+                        <div class="step-number">3</div>
+                        <div class="step-title">
+                            <h3>Vardiya ve Tür</h3>
+                            <span class="step-summary" id="summary3"></span>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="shift">3. Vardiya</label>
+                                <select id="shift" required>
+                                    <option value="">Seçiniz...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="jobType">4. İş Türü</label>
+                                <select id="jobType" required>
+                                    <option value="">Seçiniz...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-next" onclick="nextStep(3)">İleri (Tamam) →</button>
+                    </div>
+                </div>
+
+                <!-- Adım 4: Detaylar & Gönder -->
+                <div class="step-container" id="step4">
+                    <div class="step-header" onclick="goToStep(4)">
+                        <div class="step-number">4</div>
+                        <div class="step-title">
+                            <h3>Açıklama ve Fotoğraf</h3>
+                            <span class="step-summary" id="summary4"></span>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <div class="form-group">
+                            <label for="description">Arıza / İstek Açıklaması</label>
+                            <textarea id="description" rows="3" required placeholder="Sorunu detaylıca açıklayın..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="photo">Fotoğraf (Opsiyonel)</label>
+                            <input type="file" id="photo" accept="image/*" style="padding: 0.5rem; background: rgba(0,0,0,0.2);">
+                        </div>
+                        
+                        <button type="submit" id="submitBtn" style="background:#10b981; margin-top:1rem; width:100%;">
+                            <span>Talebi Gönder</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                    </div>
+                </div>
                 
                 <div id="successMessage" class="hidden">
                     🎉 Arıza kaydınız başarıyla oluşturuldu!

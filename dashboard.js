@@ -207,39 +207,32 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
                 else if (jType.includes('PLANLI')) { textColor = '#FFA500'; }
 
                 const statusIcon = isResolved ? '✓ ✓' : '⚡';
-                let photoLink = fault.photoUrl ? `<a href="${fault.photoUrl}" target="_blank" style="color:#a78bfa; text-decoration:none;">[FOTO]</a>` : '';
+                let photoLink = fault.photoUrl ? `<span style="color:#a78bfa; margin-left: 5px;">[FOTOĞRAF VAR]</span>` : '';
                 
-                // Görevli seçimi (Terminal stili)
-                let assignBtn = '';
-                if (isAdmin && !isResolved) {
-                    let opts = `<option value="" style="background:#0f172a; color:#fff; font-size:0.85rem;">Görevli Ata</option>`;
-                    operatorsList.sort().forEach(op => {
-                        opts += `<option value="${op}" style="background:#0f172a; color:#fff; font-size:0.85rem;" ${fault.assignedTo === op ? 'selected' : ''}>${op}</option>`;
-                    });
-                    assignBtn = `<select onchange="updateAssignee('${fault.id}', this.value)" style="background:transparent; color:#3b82f6; border:none; font-family:monospace; cursor:pointer; outline:none; font-size:0.85rem; padding:0; margin-left:10px;">${opts}</select>`;
-                } else if (fault.assignedTo) {
-                    assignBtn = `<span style="color:#3b82f6; margin-left:10px; font-size:0.85rem;">[Görevli: ${fault.assignedTo}]</span>`;
-                }
-
-                // Admin silme butonu
-                let adminBtn = '';
-                if (isAdmin) {
-                    adminBtn = `<span onclick="deleteFault('${fault.id}')" style="color:#ef4444; cursor:pointer; margin-left:10px;">[SİL]</span>`;
+                // Görevli gösterimi (Satırda sadece metin olarak kalacak, atama modal içinden yapılacak)
+                let assignText = '';
+                if (fault.assignedTo) {
+                    assignText = `<span style="color:#3b82f6; margin-left:10px; font-size:0.85rem;">[Görevli: ${fault.assignedTo}]</span>`;
+                } else if (isAdmin && !isResolved) {
+                    assignText = `<span style="color:#f59e0b; margin-left:10px; font-size:0.85rem;">[Görevli Bekliyor]</span>`;
                 }
 
                 // Sadece ESKİ kayıtlarda (tarihsel gruplamada) İş Türünü satırda göster
                 let jobTypeDisplay = groupData.type === 'OLD' ? `${jType || 'BİLİNMİYOR'} ` : '';
+                
+                // Bugünün kaydı ise özel bir sınıf ekle
+                let rowClass = groupData.type === 'TODAY' ? 'today-row' : 'old-row';
 
-                // Satırları Tek Satır (Single Line) Terminal formatında oluştur
+                // Satırları tıklanabilir olarak oluştur (Modal açtırır)
                 html += `
-                    <div class="term-line" style="margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                    <div class="term-line fault-row ${rowClass}" onclick="openFaultModal('${fault.id}')" style="margin-bottom: 0.8rem; padding-bottom: 0.5rem; cursor: pointer;">
                         <span class="term-time">[${timeStr}]</span>
                         <span class="term-content">
                             <span style="color: ${textColor}; font-weight:bold;">${statusIcon} ${jobTypeDisplay}</span>
                             <span style="color: ${textColor}; font-weight:normal; font-size:0.9em;">${fault.machine || ''}</span>
                             <span style="color: #cbd5e1;"> -> ${fault.description || '-'}</span> 
                             <span style="color: #64748b; font-size: 0.85rem; margin-left: 5px;">[Bldrn: ${fault.userName || '-'}]</span>
-                            ${photoLink} ${assignBtn} ${adminBtn}
+                            ${photoLink} ${assignText}
                         </span>
                     </div>
                 `;
@@ -255,3 +248,82 @@ db.collection("arizalar").orderBy("createdAt", "desc").onSnapshot((snapshot) => 
     if(document.getElementById('totalOpenCount')) document.getElementById('totalOpenCount').innerText = `${openFaults.length} kayıt`;
     if(document.getElementById('totalResolvedCount')) document.getElementById('totalResolvedCount').innerText = `${resolvedFaults.length} kayıt`;
 });
+
+// MODAL İŞLEMLERİ
+window.allFaults = []; // Global arıza havuzu
+db.collection("arizalar").onSnapshot(snap => {
+    window.allFaults = [];
+    snap.forEach(doc => window.allFaults.push({ id: doc.id, ...doc.data() }));
+});
+
+window.openFaultModal = (id) => {
+    const fault = window.allFaults.find(f => f.id === id);
+    if(!fault) return;
+
+    const dateObj = fault.createdAt ? fault.createdAt.toDate() : new Date();
+    const dateStr = dateObj.toLocaleString('tr-TR');
+    
+    let photoLink = fault.photoUrl ? `<div style="margin-top:1rem;"><a href="${fault.photoUrl}" target="_blank" style="color:var(--accent); font-weight:bold; text-decoration:none;">📸 FOTOĞRAFI GÖRÜNTÜLE</a></div>` : '';
+
+    document.getElementById('faultModalBody').innerHTML = `
+        <div style="margin-bottom: 0.4rem;"><strong>Tarih:</strong> <span style="color:var(--text-secondary);">${dateStr}</span></div>
+        <div style="margin-bottom: 0.4rem;"><strong>Bildiren:</strong> <span style="color:var(--text-secondary);">${fault.userName || '-'}</span></div>
+        <div style="margin-bottom: 0.4rem;"><strong>İş Türü:</strong> <span style="color:var(--text-secondary);">${fault.jobType || '-'}</span></div>
+        <div style="margin-bottom: 0.4rem;"><strong>Bölüm / Maliyet M.:</strong> <span style="color:var(--text-secondary);">${fault.costCenter || '-'}</span></div>
+        <div style="margin-bottom: 0.4rem;"><strong>Makine / Ekipman:</strong> <span style="color:var(--text-secondary);">${fault.machine || '-'}</span></div>
+        <div style="margin-bottom: 0.4rem;"><strong>Vardiya:</strong> <span style="color:var(--text-secondary);">${fault.shift || '-'}</span></div>
+        <div style="margin-bottom: 0.4rem;"><strong>Durum:</strong> <span style="color:var(--text-secondary);">${fault.status}</span></div>
+        <div style="margin-bottom: 0.4rem;"><strong>Görevli:</strong> <span style="color:var(--text-secondary);">${fault.assignedTo || 'Henüz Atanmadı'}</span></div>
+        
+        <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+            <strong style="color:white;">Açıklama:</strong><br>
+            <span style="color: #cbd5e1;">${fault.description || '-'}</span>
+        </div>
+        ${photoLink}
+    `;
+
+    let actionsHtml = '';
+    
+    // Admin yetkisi varsa butonları çiz
+    if (isAdmin) {
+        let assignSection = '';
+        if (fault.status !== 'Çözüldü') {
+            let opts = `<option value="">Görevli Seç...</option>`;
+            operatorsList.sort().forEach(op => {
+                opts += `<option value="${op}" ${fault.assignedTo === op ? 'selected' : ''}>${op}</option>`;
+            });
+            assignSection = `
+                <div style="flex: 1; margin-right: 1rem;">
+                    <label style="display:block; font-size:0.8rem; margin-bottom:0.3rem;">Operatör Ata/Değiştir:</label>
+                    <select onchange="updateAssigneeAndClose('${fault.id}', this.value)" style="padding: 0.6rem; border-radius: 8px;">
+                        ${opts}
+                    </select>
+                </div>
+            `;
+        }
+        
+        actionsHtml = `
+            ${assignSection}
+            <div style="display: flex; align-items: flex-end;">
+                <button onclick="deleteFaultAndClose('${fault.id}')" style="background:var(--danger); width:auto; padding:0.6rem 1rem; margin:0;">🗑️ Kaydı Sil</button>
+            </div>
+        `;
+    }
+
+    document.getElementById('faultModalActions').innerHTML = actionsHtml;
+    document.getElementById('faultModal').classList.remove('hidden');
+};
+
+window.closeFaultModal = () => {
+    document.getElementById('faultModal').classList.add('hidden');
+};
+
+window.updateAssigneeAndClose = async (id, val) => {
+    await window.updateAssignee(id, val);
+    closeFaultModal();
+};
+
+window.deleteFaultAndClose = async (id) => {
+    await window.deleteFault(id);
+    closeFaultModal();
+};

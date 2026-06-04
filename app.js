@@ -161,18 +161,8 @@ form.addEventListener('submit', async (e) => {
             if (mailDoc.exists && mailDoc.data().key && mailDoc.data().enabled !== false) {
                 const accessKey = mailDoc.data().key;
                 
-                // FormSubmit görünümünü taklit eden HTML mail içeriği
                 const dashboardLink = window.location.href.replace('index.html', '') + 'dashboard.html';
                 const faultTypeStr = faultData.jobType ? faultData.jobType.toUpperCase() : "ARIZA BİLDİRİMİ";
-                
-                const emailHtml = `
-                    <div style="font-family: Arial, sans-serif; color: #1f2937;">
-                        <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;">${faultData.description}</h2>
-                        <p style="font-size: 1.1rem; color: #4b5563; margin-bottom: 0.5rem;">${faultData.userName}</p>
-                        <p style="font-size: 1.1rem; color: #4b5563; margin-bottom: 1.5rem;">Vardiya: ${faultData.shift}</p>
-                        <a href="${dashboardLink}" style="font-size: 1.1rem; color: #3b82f6; text-decoration: underline; font-weight: bold;">İŞ İSTEK FORM GİRİŞ</a>
-                    </div>
-                `;
 
                 const response = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
@@ -181,17 +171,21 @@ form.addEventListener('submit', async (e) => {
                         access_key: accessKey,
                         subject: faultData.machine || "Yeni Arıza", // Konu başlığı Makine Adı
                         from_name: faultTypeStr, // Gönderen kişi MEKANİK ARIZA vs.
-                        email: "test@sistem.com",
-                        message: emailHtml
+                        "Arıza Açıklaması": faultData.description,
+                        "Bildiren Personel": faultData.userName,
+                        "Çalışılan Vardiya": faultData.shift,
+                        "Sisteme Giriş Linki": dashboardLink
                     })
                 });
                 
                 const result = await response.json();
                 if(!result.success) {
                     alert("⚠️ API Hatası (Mail Gitmedi): " + result.message);
+                } else {
+                    console.log("✅ Mail Web3Forms'a başarıyla iletildi.");
                 }
             } else {
-                console.log("Mail gönderimi kapalı veya Access Key yok.");
+                alert("⚠️ Sistem Uyarısı: Admin panelindeki Mail Şalteri KAPALI veya Access Key kaydedilmemiş. Bu yüzden mail atılmadı.");
             }
         } catch(e) {
             alert("⚠️ Mail gönderim aşamasında kritik hata: " + e.message);
@@ -205,7 +199,11 @@ form.addEventListener('submit', async (e) => {
         setTimeout(() => {
             successMessage.classList.add('hidden');
             submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Talebi Gönder';
+            submitBtn.innerHTML = `
+                <span>Talebi Gönder</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            `;
+            window.resetStepper(); // Formu 1. adıma döndür
         }, 3000);
 
     } catch (error) {
@@ -235,3 +233,82 @@ document.addEventListener('DOMContentLoaded', () => {
         checkFilled(el);
     });
 });
+// --- Çok Adımlı Form (Stepper) Mantığı ---
+
+window.goToStep = (step) => {
+    const currentActive = document.querySelector('.step-container.active');
+    if (currentActive) {
+        const currentStepNum = parseInt(currentActive.id.replace('step', ''));
+        if (currentStepNum === step) return;
+        
+        if (step > currentStepNum) {
+            if (!validateStep(currentStepNum)) return;
+        }
+        
+        updateSummary(currentStepNum);
+        currentActive.classList.remove('active');
+        currentActive.classList.add('completed');
+    }
+    
+    const target = document.getElementById(`step${step}`);
+    if(target) {
+        target.classList.add('active');
+        target.classList.remove('completed');
+        
+        const firstInput = target.querySelector('input, select, textarea');
+        if(firstInput) setTimeout(() => firstInput.focus(), 300);
+    }
+};
+
+window.nextStep = (currentStepNum) => {
+    if (validateStep(currentStepNum)) goToStep(currentStepNum + 1);
+};
+
+const validateStep = (step) => {
+    const container = document.getElementById(`step${step}`);
+    const inputs = container.querySelectorAll('input[required], select[required], textarea[required]');
+    let isValid = true;
+    
+    inputs.forEach(el => {
+        if (!el.value.trim()) {
+            el.style.borderColor = 'var(--danger)';
+            el.classList.add('shake');
+            setTimeout(() => el.classList.remove('shake'), 500);
+            isValid = false;
+        } else {
+            el.style.borderColor = ''; 
+        }
+    });
+    return isValid;
+};
+
+const updateSummary = (step) => {
+    let summaryText = "";
+    if (step === 1) {
+        summaryText = document.getElementById('userName').value;
+    } else if (step === 2) {
+        const dept = document.getElementById('costCenter').value;
+        const mach = document.getElementById('machine').value;
+        if(dept && mach) summaryText = `${dept} > ${mach}`;
+        else if (dept) summaryText = dept;
+    } else if (step === 3) {
+        const shift = document.getElementById('shift').value;
+        const job = document.getElementById('jobType').value;
+        if(shift && job) summaryText = `${shift} / ${job}`;
+    } else if (step === 4) {
+        summaryText = document.getElementById('description').value;
+    }
+    
+    const summarySpan = document.getElementById(`summary${step}`);
+    if (summarySpan) summarySpan.innerText = summaryText;
+};
+
+// Form submit başarılı olduğunda ilk adıma döndür
+window.resetStepper = () => {
+    document.querySelectorAll('.step-summary').forEach(el => el.innerText = '');
+    document.querySelectorAll('.step-container').forEach(el => {
+        el.classList.remove('active');
+        el.classList.remove('completed');
+    });
+    document.getElementById('step1').classList.add('active');
+};
