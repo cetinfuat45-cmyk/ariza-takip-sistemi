@@ -247,13 +247,22 @@ window.saveSyncTime = async () => {
 
 // Aktarım Linkini Kaydet
 window.saveExportUrl = async () => {
-    const urlVal = document.getElementById('input-exportUrl').value.trim();
-    if (!urlVal || !urlVal.startsWith('http')) {
+    let urlVal = document.getElementById('input-exportUrl').value.trim();
+    
+    if (!urlVal || urlVal.length < 10) {
         alert("Lütfen geçerli bir Google Apps Script (Web App) linki girin!");
         return;
     }
+
+    // Android tarayıcılar bazen kopyalarken "https://" kısmını gizler/almaz. 
+    // Eğer link http ile başlamıyorsa biz otomatik ekliyoruz.
+    if (!urlVal.toLowerCase().startsWith('http')) {
+        urlVal = 'https://' + urlVal;
+    }
+
     try {
         await settingsRef.doc('syncSettings').set({ exportUrl: urlVal }, { merge: true });
+        document.getElementById('input-exportUrl').value = urlVal;
         document.getElementById('testExportBtn').style.display = 'block';
         alert("✅ Aktarım Linki başarıyla kaydedildi!");
     } catch (err) { alert("Kaydedilirken hata oluştu."); }
